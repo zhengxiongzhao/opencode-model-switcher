@@ -1,0 +1,35 @@
+# Ignore backup files created by the script
+*.backup
+
+# Ignore version files
+*.v1
+*.v2
+*.v3
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore test artifacts
+test-results/
+coverage/
+
+# Ignore logs
+*.log
+
+# Ignore node_modules (if any)
+node_modules/
+
+# Ignore backup scripts from development
+scripts/*.backup

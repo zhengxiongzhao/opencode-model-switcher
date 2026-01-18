@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Generate checksum
+        run: sha256sum bin/opencode-switch-model.sh > opencode-switch-model.sh.sha256
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## What's Changed
+
+            See [CHANGELOG.md](../../blob/main/CHANGELOG.md) for detailed changes.
+
+            ## Installation
+
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash
+            ```
+
+            Or with version:
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/${{ steps.version.outputs.version }}/scripts/install.sh | bash
+            ```
+
+            ## Verification
+
+            Verify the download with SHA256 checksum:
+            ```bash
+            sha256sum --check opencode-switch-model.sh.sha256
+            ```
+          files: |
+            bin/opencode-switch-model.sh
+            opencode-switch-model.sh.sha256
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

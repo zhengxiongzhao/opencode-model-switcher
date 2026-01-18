@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: ShellCheck Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './bin ./scripts'
+          severity: warning
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 curl shellcheck
+
+      - name: Check script syntax
+        run: |
+          bash -n bin/opencode-switch-model.sh
+          bash -n scripts/install.sh
+          bash -n scripts/uninstall.sh
+
+      - name: Run ShellCheck
+        run: |
+          shellcheck bin/opencode-switch-model.sh
+          shellcheck scripts/install.sh
+          shellcheck scripts/uninstall.sh
+
+      - name: Test main script
+        run: |
+          chmod +x bin/opencode-switch-model.sh
+          ./bin/opencode-switch-model.sh --help
+
+      - name: Test install script
+        run: |
+          chmod +x scripts/install.sh
+          ./scripts/install.sh --help
+
+      - name: Test uninstall script
+        run: |
+          chmod +x scripts/uninstall.sh
+          ./scripts/uninstall.sh --help
+
+  build:
+    name: Build Verification
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bash
+        run: |
+          echo "Testing on ${{ matrix.os }}"
+          bash --version
+
+      - name: Test script on ${{ matrix.os }}
+        run: |
+          chmod +x bin/opencode-switch-model.sh
+          ./bin/opencode-switch-model.sh --help

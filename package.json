@@ -1,0 +1,38 @@
+{
+  "name": "opencode-model-switcher",
+  "version": "1.0.0",
+  "description": "Quick AI model switching for opencode and oh-my-opencode",
+  "main": "bin/opencode-switch-model.sh",
+  "bin": {
+    "opencode-model": "./bin/opencode-switch-model.sh"
+  },
+  "scripts": {
+    "test": "./tests/test_installation.sh",
+    "lint": "shellcheck bin/opencode-switch-model.sh scripts/*.sh",
+    "install": "./scripts/install.sh",
+    "uninstall": "./scripts/uninstall.sh"
+  },
+  "keywords": [
+    "opencode",
+    "ai",
+    "model-switcher",
+    "oh-my-opencode",
+    "bash",
+    "shell-script",
+    "cli"
+  ],
+  "author": "OpenCode Model Switcher Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhengxiongzhao/opencode-model-switcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zhengxiongzhao/opencode-model-switcher/issues"
+  },
+  "homepage": "https://github.com/zhengxiongzhao/opencode-model-switcher#readme",
+  "engines": {
+    "bash": ">=4.0",
+    "python3": ">=3.6"
+  }
+}

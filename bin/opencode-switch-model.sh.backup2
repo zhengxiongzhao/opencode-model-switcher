@@ -1,0 +1,765 @@
+#!/bin/bash
+
+CONFIG_FILE="$HOME/.config/opencode/oh-my-opencode.json"
+OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
+BACKUP_FILE="$CONFIG_FILE.backup"
+
+# 免费基础模型
+BASE_MODELS=(
+    "opencode/glm-4.7-free"
+    "opencode/minimax-m2.1-free"
+    "opencode/grok-code"
+    "opencode/big-pickle"
+)
+
+# 免费模型标记
+FREE_MODELS=(
+    "opencode/glm-4.7-free"
+    "opencode/minimax-m2.1-free"
+    "opencode/grok-code"
+    "opencode/big-pickle"
+)
+
+# 初始 MODELS（后续会被动态更新）
+MODELS=(
+    "opencode/glm-4.7-free"
+    "opencode/minimax-m2.1-free"
+    "opencode/grok-code"
+    "opencode/big-pickle"
+    "custom"
+)
+
+ RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+NC='\033[0m'
+
+get_favorite_models() {
+    local model_file="$HOME/.local/state/opencode/model.json"
+    if [ -f "$model_file" ]; then
+        python3 -c "
+import json
+try:
+    with open('$model_file', 'r') as f:
+        data = json.load(f)
+        favorites = data.get('favorite', [])
+        for fav in favorites:
+            provider = fav.get('providerID', '')
+            model = fav.get('modelID', '')
+            if model:
+                print(f'{provider}/{model}')
+except:
+    pass
+" 2>/dev/null
+    fi
+}
+
+update_models() {
+    FAVORITE_MODELS=($(get_favorite_models))
+
+    NEW_MODELS=()
+    declare -A seen
+
+    for model in "${MODELS[@]}"; do
+        if [[ "$model" != "custom" && -z "${seen[$model]}" ]]; then
+            seen[$model]=1
+            NEW_MODELS+=("$model")
+        fi
+    done
+
+    for model in "${FAVORITE_MODELS[@]}"; do
+        if [[ -z "${seen[$model]}" ]]; then
+            seen[$model]=1
+            NEW_MODELS+=("$model")
+        fi
+    done
+
+    NEW_MODELS+=("custom")
+
+    MODELS=("${NEW_MODELS[@]}")
+}
+
+get_current_model() {
+    if [ -f "$CONFIG_FILE" ]; then
+        python3 -c "
+import json
+try:
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+        if config.get('agents'):
+            first_agent = list(config['agents'].values())[0]
+            model = first_agent.get('model', 'unknown')
+            print(model)
+        else:
+            print('unknown')
+except:
+    print('unknown')
+" 2>/dev/null || echo "unknown"
+    else
+        echo "unknown"
+    fi
+}
+
+get_opencode_model() {
+    if [ -f "$OPENCODE_CONFIG" ]; then
+        python3 -c "
+import json
+try:
+    with open('$OPENCODE_CONFIG', 'r') as f:
+        config = json.load(f)
+        main_model = config.get('model', 'unknown')
+        small_model = config.get('small_model', 'unknown')
+        print(f'{main_model}|{small_model}')
+except:
+    print('unknown|unknown')
+" 2>/dev/null || echo "unknown|unknown"
+    else
+        echo "unknown|unknown"
+    fi
+}
+
+get_oh_my_opencode_agents() {
+    if [ -f "$CONFIG_FILE" ]; then
+        python3 -c "
+import json
+try:
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+        if config.get('agents'):
+            for name, agent_config in config['agents'].items():
+                model = agent_config.get('model', 'unknown')
+                print(f'{name}|{model}')
+except:
+    pass
+" 2>/dev/null
+    fi
+}
+
+list_agents() {
+    if [ -f "$CONFIG_FILE" ]; then
+        python3 -c "
+import json
+try:
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+        if config.get('agents'):
+            i = 1
+            for name in config['agents'].keys():
+                print(f'{i}|{name}')
+                i += 1
+except:
+    pass
+" 2>/dev/null
+    fi
+}
+
+# 显示单个模型，根据是否免费添加标记
+display_model() {
+    local index=$1
+    local model=$2
+
+    # 检查是否为免费模型
+    is_free=false
+    for free_model in "${FREE_MODELS[@]}"; do
+        if [[ "$model" == "$free_model" ]]; then
+            is_free=true
+            break
+        fi
+    done
+
+    if [[ "$is_free" == true ]]; then
+        printf "  ${GREEN}%2d)${NC} %s ${BLUE}[FREE]${NC}\n" "$index" "$model"
+    else
+        printf "  ${GREEN}%2d)${NC} %s\n" "$index" "$model"
+    fi
+}
+
+show_current() {
+    opencode_models=$(get_opencode_model)
+    main_model=$(echo "$opencode_models" | cut -d'|' -f1)
+    small_model=$(echo "$opencode_models" | cut -d'|' -f2)
+
+    echo -e "${BLUE}════════════════════════════════════════${NC}"
+    echo -e "${BLUE}   当前模型配置${NC}"
+    echo -e "${BLUE}════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${YELLOW}[opencode]${NC}"
+
+    is_main_free=false
+    for free_model in "${FREE_MODELS[@]}"; do
+        if [[ "$main_model" == "$free_model" ]]; then
+            is_main_free=true
+            break
+        fi
+    done
+
+    is_small_free=false
+    for free_model in "${FREE_MODELS[@]}"; do
+        if [[ "$small_model" == "$free_model" ]]; then
+            is_small_free=true
+            break
+        fi
+    done
+
+    if [[ "$is_main_free" == true ]]; then
+        echo -e "  ${GREEN}主模型:${NC}   ${main_model} ${BLUE}[FREE]${NC}"
+    else
+        echo -e "  ${GREEN}主模型:${NC}   ${main_model}"
+    fi
+
+    if [[ "$is_small_free" == true ]]; then
+        echo -e "  ${GREEN}小模型:${NC}   ${small_model} ${BLUE}[FREE]${NC}"
+    else
+        echo -e "  ${GREEN}小模型:${NC}   ${small_model}"
+    fi
+    echo ""
+    echo -e "${YELLOW}[oh-my-opencode]${NC}"
+    agents_info=$(get_oh_my_opencode_agents)
+    if [ -n "$agents_info" ]; then
+        while IFS='|' read -r agent_name model; do
+            is_free=false
+            for free_model in "${FREE_MODELS[@]}"; do
+                if [[ "$model" == "$free_model" ]]; then
+                    is_free=true
+                    break
+                fi
+            done
+            if [[ "$is_free" == true ]]; then
+                printf "  ${GREEN}%-25s${NC} %s ${BLUE}[FREE]${NC}\n" "$agent_name:" "$model"
+            else
+                printf "  ${GREEN}%-25s${NC} %s\n" "$agent_name:" "$model"
+            fi
+        done <<< "$agents_info"
+    else
+        echo "  ${RED}无 agent 配置${NC}"
+    fi
+    echo ""
+}
+
+# 动态更新 MODELS 数组，添加 favorite 模型（去重）
+    update_models
+    show_current
+    echo -e "${BLUE}════════════════════════════════════════${NC}"
+    echo -e "${BLUE}   oh-my-opencode 模型列表${NC}"
+    echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用模型:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+}
+
+switch_agent_to() {
+    local agent_name="$1"
+    local model="$2"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo -e "${RED}✗ 配置文件不存在${NC}"
+        return 1
+    fi
+
+    cp "$CONFIG_FILE" "$BACKUP_FILE"
+
+    python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if config.get('agents', {}).get('$agent_name'):
+    config['agents']['$agent_name']['model'] = '$model'
+else:
+    print('Agent not found')
+    exit(1)
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ [$agent_name] 已切换到: $model${NC}"
+        show_current
+    else
+        echo -e "${RED}✗ 切换失败或 agent 不存在${NC}"
+        cp "$BACKUP_FILE" "$CONFIG_FILE"
+    fi
+}
+
+switch_to() {
+    local model="$1"
+    local agent_name="$2"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo -e "${RED}✗ 配置文件不存在${NC}"
+        return 1
+    fi
+
+    cp "$CONFIG_FILE" "$BACKUP_FILE"
+
+    if [ -n "$agent_name" ]; then
+        # 切换单个 agent
+        python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if config.get('agents', {}).get('$agent_name'):
+    config['agents']['$agent_name']['model'] = '$model'
+else:
+    print('Agent not found')
+    exit(1)
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ [$agent_name] 已切换到: $model${NC}"
+            show_current
+        else
+            echo -e "${RED}✗ 切换失败或 agent 不存在${NC}"
+            cp "$BACKUP_FILE" "$CONFIG_FILE"
+        fi
+    else
+        # 切换所有 agents（向后兼容）
+        python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$model'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ 所有 agents 已切换到: $model${NC}"
+            show_current
+        else
+            echo -e "${RED}✗ 切换失败${NC}"
+            cp "$BACKUP_FILE" "$CONFIG_FILE"
+        fi
+    fi
+}
+
+switch_opencode_model() {
+    local model="$1"
+    local model_type="$2"
+
+    if [ ! -f "$OPENCODE_CONFIG" ]; then
+        echo -e "${RED}✗ opencode 配置文件不存在${NC}"
+        return 1
+    fi
+
+    local temp_backup="$OPENCODE_CONFIG.backup"
+    cp "$OPENCODE_CONFIG" "$temp_backup"
+
+    if [ "$model_type" = "main" ]; then
+        # 修改主模型
+        python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$model'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ opencode 主模型已切换到: $model${NC}"
+            show_current
+        else
+            echo -e "${RED}✗ 切换失败${NC}"
+            cp "$temp_backup" "$OPENCODE_CONFIG"
+        fi
+    elif [ "$model_type" = "small" ]; then
+        # 修改小模型
+        python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['small_model'] = '$model'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ opencode 小模型已切换到: $model${NC}"
+            show_current
+        else
+            echo -e "${RED}✗ 切换失败${NC}"
+            cp "$temp_backup" "$OPENCODE_CONFIG"
+        fi
+    fi
+}
+
+interactive() {
+    while true; do
+        clear
+        show_current
+
+        # 选择配置目标类型
+        echo -e "${BLUE}════════════════════════════════════════${NC}"
+        echo -e "${BLUE}   选择配置类型${NC}"
+        echo -e "${BLUE}════════════════════════════════════════${NC}"
+        echo "  1) opencode 主模型"
+        echo "  2) opencode 小模型"
+        echo "  3) oh-my-opencode agents"
+        echo "  4) 所有模型"
+        echo ""
+
+        echo -n -e "${BLUE}选择类型 [1-4] 或 q 退出: ${NC}"
+        read type_choice
+
+         case $type_choice in
+            q|Q) exit 0 ;;
+            1)
+                update_models
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-opencode 模型列表${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用模型:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
+                echo -n -e "${BLUE}选择模型 [1-${#MODELS[@]}] 或 0 返回: ${NC}"
+                read choice
+                case $choice in
+                    0) continue ;;
+                    [1-9]|1[0-9])
+                        index=$((choice-1))
+                        if [ $index -lt ${#MODELS[@]} ]; then
+                            selected="${MODELS[$index]}"
+                            if [ "$selected" = "custom" ]; then
+                                echo -n -e "${YELLOW}输入模型名称: ${NC}"
+                                read custom
+                                if [ -n "$custom" ]; then
+                                    python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$custom'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                    echo -e "${GREEN}✓ opencode 主模型已切换到: $custom${NC}"
+                                fi
+                            else
+                                python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$selected'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                echo -e "${GREEN}✓ opencode 主模型已切换到: $selected${NC}"
+                            fi
+                        fi
+                        ;;
+                esac
+                 ;;
+            2)
+                update_models
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-opencode 模型列表${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用模型:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
+                echo -n -e "${BLUE}选择模型 [1-${#MODELS[@]}] 或 0 返回: ${NC}"
+                read choice
+                case $choice in
+                    0) continue ;;
+                    [1-9]|1[0-9])
+                        index=$((choice-1))
+                        if [ $index -lt ${#MODELS[@]} ]; then
+                            selected="${MODELS[$index]}"
+                            if [ "$selected" = "custom" ]; then
+                                echo -n -e "${YELLOW}输入模型名称: ${NC}"
+                                read custom
+                                if [ -n "$custom" ]; then
+                                    python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['small_model'] = '$custom'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                    echo -e "${GREEN}✓ opencode 小模型已切换到: $custom${NC}"
+                                fi
+                            else
+                                python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['small_model'] = '$selected'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                echo -e "${GREEN}✓ opencode 小模型已切换到: $selected${NC}"
+                            fi
+                        fi
+                        ;;
+                esac
+                 ;;
+            3)
+                update_models
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-opencode 模型列表${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用模型:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
+                # 选择要切换的 agent
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   选择目标 Agent${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用 Agents:${NC}"
+                echo ""
+
+                agents_list=$(list_agents)
+                agent_count=$(echo "$agents_list" | wc -l)
+                i=1
+                while IFS='|' read -r num agent_name; do
+                    printf "  ${GREEN}%2d)${NC} %s\n" "$num" "$agent_name"
+                    i=$((i+1))
+                done <<< "$agents_list"
+                printf "  ${GREEN}%2d)${NC} %s\n" "0" "所有 agents"
+                echo ""
+
+                echo -n -e "${BLUE}选择 Agent [0-$agent_count] 或 q 退出: ${NC}"
+                read agent_choice
+
+                case $agent_choice in
+                    q|Q) exit 0 ;;
+                    0)
+                        target_agent=""
+                        echo -e "${GREEN}✓ 将切换所有 agents${NC}"
+                        ;;
+                    [1-9]|1[0-9])
+                        target_agent=$(echo "$agents_list" | grep "^$agent_choice|" | cut -d'|' -f2)
+                        if [ -z "$target_agent" ]; then
+                            echo -e "${RED}✗ 无效选择${NC}"
+                            continue
+                        fi
+                        echo -e "${GREEN}✓ 将切换: $target_agent${NC}"
+                        ;;
+                    *)
+                        echo -e "${RED}✗ 无效选择${NC}"
+                        continue
+                        ;;
+                esac
+
+                echo ""
+                echo -n -e "${BLUE}选择模型 [1-${#MODELS[@]}] 或 0 返回: ${NC}"
+                read choice
+                case $choice in
+                    0) continue ;;
+                    [1-9]|1[0-9])
+                        index=$((choice-1))
+                        if [ $index -lt ${#MODELS[@]} ]; then
+                            selected="${MODELS[$index]}"
+                            if [ "$selected" = "custom" ]; then
+                                echo -n -e "${YELLOW}输入模型名称: ${NC}"
+                                read custom
+                                if [ -n "$custom" ]; then
+                                    cp "$CONFIG_FILE" "$BACKUP_FILE"
+                                    python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if '$target_agent':
+    config['agents']['$target_agent']['model'] = '$custom'
+else:
+    for agent in config.get('agents', {}):
+        config['agents'][agent]['model'] = '$custom'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+                                    if [ $? -eq 0 ]; then
+                                        if [ -n "$target_agent" ]; then
+                                            echo -e "${GREEN}✓ [$target_agent] 已切换到: $custom${NC}"
+                                        else
+                                            echo -e "${GREEN}✓ 所有 agents 已切换到: $custom${NC}"
+                                        fi
+                                    else
+                                        echo -e "${RED}✗ 切换失败${NC}"
+                                        cp "$BACKUP_FILE" "$CONFIG_FILE"
+                                    fi
+                                fi
+                            else
+                                cp "$CONFIG_FILE" "$BACKUP_FILE"
+                                python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if '$target_agent':
+    config['agents']['$target_agent']['model'] = '$selected'
+else:
+    for agent in config.get('agents', {}):
+        config['agents'][agent]['model'] = '$selected'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+                                if [ $? -eq 0 ]; then
+                                    if [ -n "$target_agent" ]; then
+                                        echo -e "${GREEN}✓ [$target_agent] 已切换到: $selected${NC}"
+                                    else
+                                        echo -e "${GREEN}✓ 所有 agents 已切换到: $selected${NC}"
+                                    fi
+                                else
+                                    echo -e "${RED}✗ 切换失败${NC}"
+                                    cp "$BACKUP_FILE" "$CONFIG_FILE"
+                                fi
+                            fi
+                        fi
+                        ;;
+                esac
+                ;;
+            4)
+                update_models
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-opencode 模型列表${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}可用模型:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
+                echo -n -e "${BLUE}选择模型 [1-${#MODELS[@]}] 或 0 返回: ${NC}"
+                read choice
+                case $choice in
+                    0) continue ;;
+                    [1-9]|1[0-9])
+                        index=$((choice-1))
+                        if [ $index -lt ${#MODELS[@]} ]; then
+                            selected="${MODELS[$index]}"
+                            if [ "$selected" = "custom" ]; then
+                                echo -n -e "${YELLOW}输入模型名称: ${NC}"
+                                read custom
+                                if [ -n "$custom" ]; then
+                                    # 切换 opencode 主模型和小模型
+                                    cp "$OPENCODE_CONFIG" "$OPENCODE_CONFIG.backup"
+                                    python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$custom'
+config['small_model'] = '$custom'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                    # 切换所有 oh-my-opencode agents
+                                    cp "$CONFIG_FILE" "$BACKUP_FILE"
+                                    python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$custom'
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+                                    if [ $? -eq 0 ]; then
+                                        echo -e "${GREEN}✓ 所有模型已切换到: $custom${NC}"
+                                    else
+                                        echo -e "${RED}✗ 切换失败${NC}"
+                                        cp "$BACKUP_FILE" "$CONFIG_FILE"
+                                        cp "$OPENCODE_CONFIG.backup" "$OPENCODE_CONFIG"
+                                    fi
+                                fi
+                            else
+                                # 切换 opencode 主模型和小模型
+                                cp "$OPENCODE_CONFIG" "$OPENCODE_CONFIG.backup"
+                                python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$selected'
+config['small_model'] = '$selected'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null
+                                # 切换所有 oh-my-opencode agents
+                                cp "$CONFIG_FILE" "$BACKUP_FILE"
+                                python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$selected'
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null
+                                if [ $? -eq 0 ]; then
+                                    echo -e "${GREEN}✓ 所有模型已切换到: $selected${NC}"
+                                else
+                                    echo -e "${RED}✗ 切换失败${NC}"
+                                    cp "$BACKUP_FILE" "$CONFIG_FILE"
+                                    cp "$OPENCODE_CONFIG.backup" "$OPENCODE_CONFIG"
+                                fi
+                            fi
+                        fi
+                        ;;
+                esac
+                ;;
+            *)
+                echo -e "${RED}✗ 无效选择${NC}"
+                ;;
+        esac
+    done
+}
+
+case "$1" in
+    --list|-l) list_models ;;
+    --agent)
+        if [ -z "$2" ] || [ -z "$3" ]; then
+            echo -e "${RED}✗ 用法: $0 --agent <agent_name> <model>${NC}"
+            exit 1
+        fi
+        switch_to "$3" "$2"
+        ;;
+    --main-model)
+        if [ -z "$2" ]; then
+            echo -e "${RED}✗ 用法: $0 --main-model <model>${NC}"
+            exit 1
+        fi
+        switch_opencode_model "$2" "main"
+        ;;
+    --small-model)
+        if [ -z "$2" ]; then
+            echo -e "${RED}✗ 用法: $0 --small-model <model>${NC}"
+            exit 1
+        fi
+        switch_opencode_model "$2" "small"
+        ;;
+    --help|-h)
+        echo "用法: $0 [选项] [模型]"
+        echo "  --list                  列出所有模型"
+        echo "  --agent <name> <model>  切换指定 oh-my-opencode agent"
+        echo "  --main-model <model>    切换 opencode 主模型"
+        echo "  --small-model <model>   切换 opencode 小模型"
+        echo "  --help                  显示帮助"
+        echo "  模型名称                直接切换所有 oh-my-opencode agents"
+        exit 0
+        ;;
+    "") interactive ;;
+    *) switch_to "$1" ;;
+esac

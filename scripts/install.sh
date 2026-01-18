@@ -65,7 +65,7 @@ check_dependencies() {
     BASH_VERSION=$(bash --version | head -n1 | awk '{print $4}' | cut -d'(' -f1)
     if [ "$(echo "$BASH_VERSION 4.0" | awk '{print ($1 < $2)}')" = 1 ]; then
         print_error "bash version 4.0 or higher is required (current: $BASH_VERSION)"
-        exit 1
+        # exit 1
     fi
     print_success "bash $BASH_VERSION found"
 

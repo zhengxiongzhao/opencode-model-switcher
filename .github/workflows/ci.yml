@@ -18,7 +18,7 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './bin ./scripts'
-          severity: warning
+          severity: error
 
   test:
     name: Test Suite

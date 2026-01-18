@@ -30,12 +30,12 @@ jobs:
           body: |
             ## What's Changed
 
-            See [CHANGELOG.md](../../blob/main/CHANGELOG.md) for detailed changes.
+            See [CHANGELOG.md](../../blob/master/CHANGELOG.md) for detailed changes.
 
             ## Installation
 
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash
             ```
 
             Or with version:

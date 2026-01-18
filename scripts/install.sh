@@ -10,7 +10,7 @@ set -e
 
 # Configuration
 REPO="${REPO:-zhengxiongzhao/opencode-model-switcher}"
-VERSION="${VERSION:-main}"
+VERSION="${VERSION:-master}"
 BRANCH="${VERSION}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.config/opencode/bin}"
 SYMLINK_DIR="${SYMLINK_DIR:-$HOME/.local/bin}"
@@ -265,12 +265,12 @@ main() {
             echo ""
             echo "Environment Variables:"
             echo "  REPO          Repository name (default: zhengxiongzhao/opencode-model-switcher)"
-            echo "  VERSION       Branch or tag (default: main)"
+            echo "            VERSION       Branch or tag (default: master)"
             echo "  INSTALL_DIR   Installation directory (default: ~/.config/opencode/bin)"
             echo "  SYMLINK_DIR   Directory for symlink (default: ~/.local/bin)"
             echo ""
             echo "Examples:"
-            echo "  curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash"
+            echo "            curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash"
             echo "  REPO=zhengxiongzhao/repo VERSION=v1.0.0 curl -fsSL <url> | bash"
             echo "  curl -fsSL <url> | bash -s --uninstall"
             exit 0

@@ -30,7 +30,7 @@ curl --version
 The fastest way to install OpenCode Model Switcher:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash
 ```
 
 #### What This Does:
@@ -133,7 +133,7 @@ opencode-model --list
 ### One-Click Uninstallation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash -s --uninstall
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash -s --uninstall
 ```
 
 ### Manual Uninstallation
@@ -156,12 +156,12 @@ rmdir ~/.config/opencode/bin 2>/dev/null || true
 ### Update to Latest Version
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash -s --update
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash -s --update
 ```
 
 Or manually re-run the installation command:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash
 ```
 
 ## Troubleshooting
@@ -229,12 +229,12 @@ sudo dnf install python3
 1. Check internet connection
 2. Verify repository URL is correct
 3. Download script manually and review:
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh -o install.sh
-   cat install.sh  # Review the script
-   bash install.sh
-   rm install.sh
-   ```
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh -o install.sh
+    cat install.sh  # Review the script
+    bash install.sh
+    rm install.sh
+    ```
 
 4. Report issue at: https://github.com/zhengxiongzhao/opencode-model-switcher/issues
 

@@ -28,7 +28,7 @@ Enhancement suggestions are welcome! Please include:
 
 ### Pull Requests
 
-1. **Fork the repository** and create your branch from `main`:
+1. **Fork the repository** and create your branch from `master`:
    ```bash
    git checkout -b my-feature-branch
    ```

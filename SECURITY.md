@@ -54,7 +54,7 @@ To use this tool securely:
 
 ```bash
 # Download and review the install script first
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh -o install.sh
 
 # Review the script
 cat install.sh

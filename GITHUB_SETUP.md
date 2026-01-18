@@ -25,15 +25,12 @@ You need to create the GitHub repository manually since the `gh` CLI is not avai
 
    After creating the repository, GitHub will show you commands. Run:
 
-   ```bash
-   cd /home/zxzhao/opencode-model
+    ```bash
+    cd /home/zxzhao/opencode-model
 
-   # Rename branch to main (recommended)
-   git branch -M main
-
-   # Push to GitHub (replace USERNAME with your GitHub zhengxiongzhao)
-   git remote add origin https://github.com/USERNAME/opencode-model-switcher.git
-   git push -u origin main
+    # Push to GitHub (replace USERNAME with your GitHub zhengxiongzhao)
+    git remote add origin https://github.com/USERNAME/opencode-model-switcher.git
+    git push -u origin master
 
    # Push the tag
    git push origin v1.0.0
@@ -75,7 +72,7 @@ gh auth login
 gh repo create opencode-model-switcher --public --source=. --description="Quick AI model switching for opencode and oh-my-opencode"
 
 # Push
-git push -u origin main
+git push -u origin master
 
 # Push tag
 git push origin v1.0.0
@@ -91,10 +88,10 @@ After completing setup, verify:
 - [ ] Repository is accessible at: https://github.com/YOUR_USERNAME/opencode-model-switcher
 - [ ] README.md displays correctly with badges (replace `zhengxiongzhao` placeholders)
 - [ ] Release v1.0.0 is published
-- [ ] Install script works:
-     ```bash
-     curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/opencode-model-switcher/main/scripts/install.sh | bash
-     ```
+ - [ ] Install script works:
+      ```bash
+      curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/opencode-model-switcher/master/scripts/install.sh | bash
+      ```
 - [ ] Command `opencode-model --help` works after installation
 - [ ] CI/CD workflows are running in GitHub Actions
 
@@ -103,7 +100,7 @@ After completing setup, verify:
 After your repository is created and pushed, users can install with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/opencode-model-switcher/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/opencode-model-switcher/master/scripts/install.sh | bash
 ```
 
 ## Update README Placeholders

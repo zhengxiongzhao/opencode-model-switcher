@@ -21,7 +21,7 @@ A powerful command-line utility for quickly switching between different AI langu
 ### One-Click Installation (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/install.sh | bash
 ```
 
 After installation, you can use the `opencode-model` command directly.
@@ -52,7 +52,7 @@ After installation, you can use the `opencode-model` command directly.
 ### Uninstallation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/main/scripts/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhengxiongzhao/opencode-model-switcher/master/scripts/uninstall.sh | bash
 ```
 
 Or manually:

@@ -63,10 +63,6 @@ check_dependencies() {
     fi
 
     BASH_VERSION=$(bash --version | head -n1 | awk '{print $4}' | cut -d'(' -f1)
-    if [ "$(echo "$BASH_VERSION 4.0" | awk '{print ($1 < $2)}')" = 1 ]; then
-        print_error "bash version 4.0 or higher is required (current: $BASH_VERSION)"
-        # exit 1
-    fi
     print_success "bash $BASH_VERSION found"
 
     if ! command -v python3 >/dev/null 2>&1; then
@@ -142,6 +138,13 @@ configure_path() {
             print_info "PATH already configured in $config_file"
             return 0
         fi
+    fi
+    
+    if [ ! -f "$config_file" ]; then
+        print_error "Config file $config_file does not exist"
+        print_info "Please add $SYMLINK_DIR to your PATH manually:"
+        echo "  export PATH=\"\$PATH:$SYMLINK_DIR\""
+        return 1
     fi
     
     # 添加 PATH 到配置文件
@@ -270,14 +273,18 @@ print_completion() {
     echo ""
 
     if [[ ":$PATH:" != *":$SYMLINK_DIR:"* ]]; then
-        echo -e "${YELLOW}IMPORTANT: Before using, add $SYMLINK_DIR to your PATH${NC}"
+        echo -e "${YELLOW}IMPORTANT: PATH has been added to $config_file${NC}"
+        echo ""
+        echo -e "${YELLOW}To activate it, please run: $source_cmd${NC}"
+        echo ""
+        echo "Or open a new terminal window."
         echo ""
         echo "Then you can use:"
         echo "  opencode-model          - Launch interactive mode"
         echo "  opencode-model --list  - List models"
         echo "  opencode-model --help  - Show help"
         echo ""
-        echo "Or use directly:"
+        echo "Or use directly (without reloading):"
         echo "  $SYMLINK_PATH"
         echo ""
     else

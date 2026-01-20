@@ -115,12 +115,116 @@ download_script() {
     echo ""
 }
 
+# 函数：自动添加 PATH 到 shell 配置文件
+configure_path() {
+    local config_file=""
+    local source_cmd=""
+    
+    # 检测操作系统和shell配置文件
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS默认使用zsh
+        config_file="$HOME/.zshrc"
+        source_cmd="source ~/.zshrc"
+    elif [ -n "$ZSH_VERSION" ]; then
+        config_file="$HOME/.zshrc"
+        source_cmd="source ~/.zshrc"
+    elif [ -n "$BASH_VERSION" ]; then
+        config_file="$HOME/.bashrc"
+        source_cmd="source ~/.bashrc"
+    else
+        print_error "Could not detect your shell. Please add $SYMLINK_DIR to your PATH manually."
+        return 1
+    fi
+    
+    # 检查是否已经在配置文件中
+    if [ -f "$config_file" ]; then
+        if grep -q "$SYMLINK_DIR" "$config_file" 2>/dev/null; then
+            print_info "PATH already configured in $config_file"
+            return 0
+        fi
+    fi
+    
+    # 添加 PATH 到配置文件
+    echo "" >> "$config_file"
+    echo "# OpenCode Model Switcher - Added $(date)" >> "$config_file"
+    echo "export PATH=\"\$PATH:$SYMLINK_DIR\"" >> "$config_file"
+    
+    print_success "Added $SYMLINK_DIR to PATH in $config_file"
+    echo ""
+    echo -e "${YELLOW}Please run following command to reload your shell:${NC}"
+    echo "  $source_cmd"
+    echo ""
+    
+    return 0
+}
+
+check_path() {
+    print_info "Checking PATH configuration..."
+
+    if [[ ":$PATH:" != *":$SYMLINK_DIR:"* ]]; then
+        print_warning "$SYMLINK_DIR is not in your PATH"
+        echo ""
+        
+        # 自动配置 PATH
+        print_info "Attempting to configure PATH automatically..."
+        if configure_path; then
+            print_success "PATH configuration complete!"
+        else
+            echo ""
+            echo -e "${YELLOW}Manual configuration required. Run:${NC}"
+            echo ""
+            
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                echo "  echo 'export PATH=\"\$PATH:$SYMLINK_DIR\"' >> ~/.zshrc"
+                echo "  source ~/.zshrc"
+                echo ""
+                echo -e "${BLUE}Note: macOS uses Zsh by default. If you use a different shell,${NC}"
+                echo -e "${BLUE}add the PATH to your shell's configuration file (.bashrc, .config/fish/config.fish, etc.)${NC}"
+            elif [ -n "$ZSH_VERSION" ]; then
+                echo "  echo 'export PATH=\"\$PATH:$SYMLINK_DIR\"' >> ~/.zshrc"
+                echo "  source ~/.zshrc"
+            elif [ -n "$BASH_VERSION" ]; then
+                echo "  echo 'export PATH=\"\$PATH:$SYMLINK_DIR\"' >> ~/.bashrc"
+                echo "  source ~/.bashrc"
+            else
+                echo "  export PATH=\"\$PATH:$SYMLINK_DIR\""
+                echo "  Add this to your shell's configuration file"
+            fi
+        fi
+        
+        echo ""
+        print_warning "For now, you can use: $SYMLINK_PATH"
+        echo ""
+    else
+        print_success "$SYMLINK_DIR is in PATH"
+        echo ""
+    fi
+}
+
 install_script() {
     print_info "Installing script..."
 
     chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
 
-    mkdir -p "$SYMLINK_DIR"
+    print_info "Creating symlink directory: $SYMLINK_DIR"
+    if ! mkdir -p "$SYMLINK_DIR" 2>/dev/null; then
+        print_error "Failed to create directory: $SYMLINK_DIR"
+        print_info "Trying alternative: ~/.local/bin"
+        SYMLINK_DIR="$HOME/.local/bin"
+        SYMLINK_PATH="$SYMLINK_DIR/opencode-model"
+        if ! mkdir -p "$SYMLINK_DIR"; then
+            print_error "Failed to create directory: $SYMLINK_DIR"
+            print_info "Falling back to: ~/bin"
+            SYMLINK_DIR="$HOME/bin"
+            SYMLINK_PATH="$SYMLINK_DIR/opencode-model"
+            if ! mkdir -p "$SYMLINK_DIR"; then
+                print_error "Cannot create any directory for symlink. Please check permissions."
+                exit 1
+            fi
+        fi
+    fi
+
+    print_success "Directory created/verified: $SYMLINK_DIR"
 
     if [ -L "$SYMLINK_PATH" ]; then
         print_info "Removing existing symlink..."
@@ -133,35 +237,6 @@ install_script() {
     echo ""
 }
 
-check_path() {
-    print_info "Checking PATH configuration..."
-
-    if [[ ":$PATH:" != *":$SYMLINK_DIR:"* ]]; then
-        print_warning "$SYMLINK_DIR is not in your PATH"
-        echo ""
-        echo -e "${YELLOW}To add it to your PATH, run:${NC}"
-        echo ""
-
-        if [ -n "$ZSH_VERSION" ]; then
-            echo "  echo 'export PATH=\"\$PATH:$SYMLINK_DIR\"' >> ~/.zshrc"
-            echo "  source ~/.zshrc"
-        elif [ -n "$BASH_VERSION" ]; then
-            echo "  echo 'export PATH=\"\$PATH:$SYMLINK_DIR\"' >> ~/.bashrc"
-            echo "  source ~/.bashrc"
-        else
-            echo "  export PATH=\"\$PATH:$SYMLINK_DIR\""
-            echo "  Add this to your shell's configuration file"
-        fi
-
-        echo ""
-        print_warning "You need to add the path to use 'opencode-model' command directly"
-        echo -e "${YELLOW}For now, you can use: $SYMLINK_PATH${NC}"
-        echo ""
-    else
-        print_success "$SYMLINK_DIR is in PATH"
-        echo ""
-    fi
-}
 
 verify_installation() {
     print_info "Verifying installation..."

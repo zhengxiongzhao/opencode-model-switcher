@@ -218,18 +218,30 @@ update_models() {
     FAVORITE_MODELS=($(get_favorite_models))
 
     NEW_MODELS=()
-    declare -A seen
 
+    # 辅助函数：检查元素是否在数组中
+    array_contains() {
+        local element="$1"
+        shift
+        local array=("$@")
+        for item in "${array[@]}"; do
+            [[ "$item" == "$element" ]] && return 0
+        done
+        return 1
+    }
+
+    # 添加MODELS中的非"custom"模型
     for model in "${MODELS[@]}"; do
-        if [[ "$model" != "custom" && -z "${seen[$model]}" ]]; then
-            seen[$model]=1
-            NEW_MODELS+=("$model")
+        if [[ "$model" != "custom" ]]; then
+            if ! array_contains "$model" "${NEW_MODELS[@]}"; then
+                NEW_MODELS+=("$model")
+            fi
         fi
     done
 
+    # 添加收藏模型（去重）
     for model in "${FAVORITE_MODELS[@]}"; do
-        if [[ -z "${seen[$model]}" ]]; then
-            seen[$model]=1
+        if ! array_contains "$model" "${NEW_MODELS[@]}"; then
             NEW_MODELS+=("$model")
         fi
     done

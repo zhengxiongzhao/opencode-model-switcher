@@ -33,3 +33,6 @@ node_modules/
 
 # Ignore backup scripts from development
 scripts/*.backup
+
+# Ignore git worktree
+opencode-model-switcher/

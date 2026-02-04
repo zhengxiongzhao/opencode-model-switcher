@@ -148,9 +148,11 @@ configure_path() {
     fi
     
     # 添加 PATH 到配置文件
-    echo "" >> "$config_file"
-    echo "# OpenCode Model Switcher - Added $(date)" >> "$config_file"
-    echo "export PATH=\"\$PATH:$SYMLINK_DIR\"" >> "$config_file"
+    {
+        echo ""
+        echo "# OpenCode Model Switcher - Added $(date)"
+        echo "export PATH=\"\$PATH:$SYMLINK_DIR\""
+    } >> "$config_file"
     
     print_success "Added $SYMLINK_DIR to PATH in $config_file"
     echo ""

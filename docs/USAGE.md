@@ -2,6 +2,25 @@
 
 This guide provides comprehensive usage instructions for OpenCode Model Switcher.
 
+## Prerequisite: Adding Models
+
+Before using `opencode-model`, you need to add models to your favorites in OpenCode:
+
+1. Open OpenCode
+2. Press `Ctrl+P` (or `Cmd+P` on macOS) to open command palette
+3. Type "switch model" and select the command
+4. Press `Ctrl+F` (or `Cmd+F` on macOS) to add models to **Favorites**
+5. The models will now be available in `opencode-model`
+
+**Built-in Models:**
+The tool comes pre-configured with these models:
+- `opencode/glm-4.7-free`
+- `opencode/minimax-m2.1-free`
+- `opencode/grok-code`
+- `opencode/big-pickle`
+
+Additional models are automatically loaded from your OpenCode favorites.
+
 ## Quick Start
 
 ```bash
@@ -87,8 +106,7 @@ opencode-model -l
 **Output**:
 - Current configuration for opencode (main and small models)
 - Current configuration for all oh-my-opencode agents
-- Available models (built-in free models + your favorites)
-- Free models marked with `[FREE]` tag
+- Available models (built-in models + your favorites)
 
 **Example Output**:
 ```
@@ -111,11 +129,11 @@ opencode-model -l
 
 Available Models:
 
-   1) opencode/glm-4.7-free [FREE]
-   2) opencode/minimax-m2.1-free [FREE]
-   3) opencode/grok-code [FREE]
-   4) opencode/big-pickle [FREE]
-   5) custom
+    1) opencode/glm-4.7-free
+    2) opencode/minimax-m2.1-free
+    3) opencode/grok-code
+    4) opencode/big-pickle
+    5) custom
 ```
 
 ### Switch All Agents
@@ -215,19 +233,6 @@ opencode-model -h
 
 Displays usage information and available commands.
 
-## Built-in Free Models
-
-The tool comes pre-configured with these free-to-use models:
-
-| Model | Description |
-|--------|-------------|
-| `opencode/glm-4.7-free` | GLM 4.7 (Free tier) |
-| `opencode/minimax-m2.1-free` | MiniMax M2.1 (Free tier) |
-| `opencode/grok-code` | Grok Code (Free tier) |
-| `opencode/big-pickle` | Big Pickle (Free tier) |
-
-These models are marked with `[FREE]` tag in the interactive menu.
-
 ## Custom Models
 
 You can use any model supported by opencode by:
@@ -252,23 +257,14 @@ Examples:
 
 The tool automatically loads your favorite models from opencode's configuration.
 
-**How Favorites Work**:
-1. When you mark a model as favorite in opencode, it's saved to `~/.local/state/opencode/model.json`
-2. This tool reads that file on startup
-3. Favorites appear in the model list automatically
-
-**Managing Favorites**:
-- Use opencode's interface to add/remove favorites
-- This tool will automatically include them in model lists
-
 **Favorites Integration**:
 ```bash
 # After marking favorites in opencode
 opencode-model --list
 
 # Output includes your favorites:
-   1) opencode/glm-4.7-free [FREE]
-   2) opencode/minimax-m2.1-free [FREE]
+   1) opencode/glm-4.7-free
+   2) opencode/minimax-m2.1-free
    3) anthropic/claude-3-opus           # Your favorite
    4) openai/gpt-4                      # Your favorite
    5) custom
@@ -301,13 +297,13 @@ cp ~/.config/opencode/opencode.json.backup ~/.config/opencode/opencode.json
 
 ## Use Cases and Examples
 
-### Use Case 1: Switch to Free Model for Cost Savings
+### Use Case 1: Switch to a Different Model
 
 ```bash
 # Check current configuration
 opencode-model --list
 
-# Switch all agents to free model
+# Switch all agents to a model
 opencode-model opencode/glm-4.7-free
 
 # Verify change
@@ -415,7 +411,6 @@ If you're not sure which model to use:
 # Interactive mode shows:
 # - Current configuration
 # - Available models
-# - Free model tags
 
 opencode-model
 ```

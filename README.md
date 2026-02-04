@@ -10,7 +10,6 @@ A powerful command-line utility for quickly switching between different AI langu
 
 - 🚀 **Quick Model Switching**: Switch models for opencode and all oh-my-opencode agents in seconds
 - 🎯 **Interactive Mode**: User-friendly menu system with color-coded output
-- 🏷️ **Free Model Tagging**: Visual [FREE] indicators for free-to-use models
 - 🔄 **Dynamic Model Loading**: Integrates with your favorite models from opencode
 - 🛡️ **Safe Operations**: Automatic backup before any configuration changes
 - 📝 **Command-Line Interface**: Perfect for automation and scripting
@@ -63,10 +62,28 @@ rm -f ~/.config/opencode/bin/opencode-switch-model.sh
 
 ## Requirements
 
-- **bash**: Version 4.0 or higher
 - **python3**: For JSON parsing
 - **curl**: For downloading installation script
 - [OpenCode](https://opencode.ai) with [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) installed
+
+## Adding Models (Prerequisite)
+
+Before using `opencode-model`, you need to add models to your favorites in OpenCode:
+
+1. Open OpenCode
+2. Press `Ctrl+P` (or `Cmd+P` on macOS) to open command palette
+3. Type "switch model" and select the command
+4. Press `Ctrl+F` (or `Cmd+F` on macOS) to add models to **Favorites**
+5. The models will now be available in `opencode-model`
+
+**Built-in Models:**
+The tool comes pre-configured with these models:
+- `opencode/glm-4.7-free`
+- `opencode/minimax-m2.1-free`
+- `opencode/grok-code`
+- `opencode/big-pickle`
+
+Additional models are automatically loaded from your OpenCode favorites.
 
 ## Usage
 
@@ -108,29 +125,19 @@ opencode-model --help
 ### Example Workflow
 
 1. **Check current configuration**:
-   ```bash
-   opencode-model --list
-   ```
+    ```bash
+    opencode-model --list
+    ```
 
-2. **Switch to a free model**:
-   ```bash
-   opencode-model opencode/glm-4.7-free
-   ```
+2. **Switch to a model**:
+    ```bash
+    opencode-model opencode/glm-4.7-free
+    ```
 
 3. **Verify the change**:
-   ```bash
-   opencode-model --list
-   ```
-
-## Available Free Models
-
-The tool comes pre-configured with these free models:
-- `opencode/glm-4.7-free` - GLM 4.7 (Free tier)
-- `opencode/minimax-m2.1-free` - MiniMax M2.1 (Free tier)
-- `opencode/grok-code` - Grok Code (Free tier)
-- `opencode/big-pickle` - Big Pickle (Free tier)
-
-Additional models are dynamically loaded from your opencode favorites.
+    ```bash
+    opencode-model --list
+    ```
 
 ## Configuration
 

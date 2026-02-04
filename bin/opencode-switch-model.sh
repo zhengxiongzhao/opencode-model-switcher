@@ -130,25 +130,10 @@ except:
     fi
 }
 
-# Display single model, add FREE tag if applicable
 display_model() {
     local index=$1
     local model=$2
-
-    # Check if model is free
-    is_free=false
-    for free_model in "${FREE_MODELS[@]}"; do
-        if [[ "$model" == "$free_model" ]]; then
-            is_free=true
-            break
-        fi
-    done
-
-    if [[ "$is_free" == true ]]; then
-        printf "  ${GREEN}%2d)${NC} %s ${BLUE}[FREE]${NC}\n" "$index" "$model"
-    else
-        printf "  ${GREEN}%2d)${NC} %s\n" "$index" "$model"
-    fi
+    printf "  ${GREEN}%2d)${NC} %s\n" "$index" "$model"
 }
 
 show_current() {
@@ -161,51 +146,14 @@ show_current() {
     echo -e "${BLUE}════════════════════════════════════════${NC}"
     echo ""
     echo -e "${YELLOW}[opencode]${NC}"
-
-    is_main_free=false
-    for free_model in "${FREE_MODELS[@]}"; do
-        if [[ "$main_model" == "$free_model" ]]; then
-            is_main_free=true
-            break
-        fi
-    done
-
-    is_small_free=false
-    for free_model in "${FREE_MODELS[@]}"; do
-        if [[ "$small_model" == "$free_model" ]]; then
-            is_small_free=true
-            break
-        fi
-    done
-
-    if [[ "$is_main_free" == true ]]; then
-        echo -e "  ${GREEN}Main model:${NC}   ${main_model} ${BLUE}[FREE]${NC}"
-    else
-        echo -e "  ${GREEN}Main model:${NC}   ${main_model}"
-    fi
-
-    if [[ "$is_small_free" == true ]]; then
-        echo -e "  ${GREEN}Small model:${NC}   ${small_model} ${BLUE}[FREE]${NC}"
-    else
-        echo -e "  ${GREEN}Small model:${NC}   ${small_model}"
-    fi
+    echo -e "  ${GREEN}Main model:${NC}   ${main_model}"
+    echo -e "  ${GREEN}Small model:${NC}   ${small_model}"
     echo ""
     echo -e "${YELLOW}[oh-my-opencode]${NC}"
     agents_info=$(get_oh_my_opencode_agents)
     if [ -n "$agents_info" ]; then
         while IFS='|' read -r agent_name model; do
-            is_free=false
-            for free_model in "${FREE_MODELS[@]}"; do
-                if [[ "$model" == "$free_model" ]]; then
-                    is_free=true
-                    break
-                fi
-            done
-            if [[ "$is_free" == true ]]; then
-                printf "  ${GREEN}%-25s${NC} %s ${BLUE}[FREE]${NC}\n" "$agent_name:" "$model"
-            else
-                printf "  ${GREEN}%-25s${NC} %s\n" "$agent_name:" "$model"
-            fi
+            printf "  ${GREEN}%-25s${NC} %s\n" "$agent_name:" "$model"
         done <<< "$agents_info"
     else
         echo "  ${RED}No agent configuration${NC}"

@@ -76,7 +76,7 @@ main() {
     fi
 
     if [ -d "$INSTALL_DIR" ]; then
-        if [ -z "$(ls -A $INSTALL_DIR)" ]; then
+        if [ -z "$(ls -A "$INSTALL_DIR")" ]; then
             rmdir "$INSTALL_DIR"
             print_success "Removed empty directory: $INSTALL_DIR"
             ((REMOVED_COUNT++))

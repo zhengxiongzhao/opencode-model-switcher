@@ -4,22 +4,6 @@ CONFIG_FILE="$HOME/.config/opencode/oh-my-opencode.json"
 OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
 BACKUP_FILE="$CONFIG_FILE.backup"
 
-# Free base models
-BASE_MODELS=(
-    "opencode/glm-4.7-free"
-    "opencode/minimax-m2.1-free"
-    "opencode/grok-code"
-    "opencode/big-pickle"
-)
-
-# Free model markers
-FREE_MODELS=(
-    "opencode/glm-4.7-free"
-    "opencode/minimax-m2.1-free"
-    "opencode/grok-code"
-    "opencode/big-pickle"
-)
-
 # Initial MODELS (will be updated dynamically)
 MODELS=(
     "opencode/glm-4.7-free"
@@ -163,7 +147,7 @@ show_current() {
 
 # Dynamically update MODELS array, add favorite models (deduplicate)
 update_models() {
-    FAVORITE_MODELS=($(get_favorite_models))
+    read -ra FAVORITE_MODELS <<< "$(get_favorite_models)"
 
     NEW_MODELS=()
 
@@ -225,7 +209,7 @@ switch_agent_to() {
 
     cp "$CONFIG_FILE" "$BACKUP_FILE"
 
-    python3 -c "
+    if python3 -c "
 import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
@@ -238,9 +222,7 @@ else:
 
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
-" 2>/dev/null
-
-    if [ $? -eq 0 ]; then
+" 2>/dev/null; then
         echo -e "${GREEN}✓ [$agent_name] switched to: $model${NC}"
         show_current
     else
@@ -276,7 +258,20 @@ else:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-        if [ $? -eq 0 ]; then
+        if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if config.get('agents', {}).get('$agent_name'):
+    config['agents']['$agent_name']['model'] = '$model'
+else:
+    print('Agent not found')
+    exit(1)
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
             echo -e "${GREEN}✓ [$agent_name] switched to: $model${NC}"
             show_current
         else
@@ -296,7 +291,17 @@ for agent in config.get('agents', {}):
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-        if [ $? -eq 0 ]; then
+        if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$model'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
             echo -e "${GREEN}✓ All agents switched to: $model${NC}"
             show_current
         else
@@ -328,7 +333,14 @@ config['model'] = '$model'
 with open('$OPENCODE_CONFIG', 'w') as f:
     json.dump(config, f, indent=4, ensure_ascii=False)
 " 2>/dev/null
-        if [ $? -eq 0 ]; then
+        if python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['model'] = '$model'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null; then
             echo -e "${GREEN}✓ opencode Main modelswitched to: $model${NC}"
             show_current
         else
@@ -345,7 +357,14 @@ config['small_model'] = '$model'
 with open('$OPENCODE_CONFIG', 'w') as f:
     json.dump(config, f, indent=4, ensure_ascii=False)
 " 2>/dev/null
-        if [ $? -eq 0 ]; then
+        if python3 -c "
+import json
+with open('$OPENCODE_CONFIG', 'r') as f:
+    config = json.load(f)
+config['small_model'] = '$model'
+with open('$OPENCODE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=4, ensure_ascii=False)
+" 2>/dev/null; then
             echo -e "${GREEN}✓ opencode Small modelswitched to: $model${NC}"
             show_current
         else
@@ -381,7 +400,7 @@ interactive() {
         echo ""
 
         echo -n -e "${BLUE}Select type [1-4] or q to quit: ${NC}"
-        read type_choice
+        read -r type_choice
 
          case $type_choice in
             q|Q) exit 0 ;;
@@ -398,7 +417,7 @@ interactive() {
                 echo ""
 
                 echo -n -e "${BLUE}Select model [1-${#MODELS[@]}] or 0 to return: ${NC}"
-                read choice
+                read -r choice
                 case $choice in
                     0) continue ;;
                     [1-9]|1[0-9])
@@ -407,7 +426,7 @@ interactive() {
                             selected="${MODELS[$index]}"
                             if [ "$selected" = "custom" ]; then
                                 echo -n -e "${YELLOW}Enter model name: ${NC}"
-                                read custom
+                                read -r custom
                                 if [ -n "$custom" ]; then
                                     python3 -c "
 import json
@@ -447,7 +466,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                 echo ""
 
                 echo -n -e "${BLUE}Select model [1-${#MODELS[@]}] or 0 to return: ${NC}"
-                read choice
+                read -r choice
                 case $choice in
                     0) continue ;;
                     [1-9]|1[0-9])
@@ -456,7 +475,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                             selected="${MODELS[$index]}"
                             if [ "$selected" = "custom" ]; then
                                 echo -n -e "${YELLOW}Enter model name: ${NC}"
-                                read custom
+                                read -r custom
                                 if [ -n "$custom" ]; then
                                     python3 -c "
 import json
@@ -513,7 +532,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                 echo ""
 
                 echo -n -e "${BLUE}Select Agent [0-$agent_count] or q to quit: ${NC}"
-                read agent_choice
+                read -r agent_choice
 
                 case $agent_choice in
                     q|Q) exit 0 ;;
@@ -537,7 +556,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
 
                 echo ""
                 echo -n -e "${BLUE}Select model [1-${#MODELS[@]}] or 0 to return: ${NC}"
-                read choice
+                read -r choice
                 case $choice in
                     0) continue ;;
                     [1-9]|1[0-9])
@@ -546,7 +565,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                             selected="${MODELS[$index]}"
                             if [ "$selected" = "custom" ]; then
                                 echo -n -e "${YELLOW}Enter model name: ${NC}"
-                                read custom
+                                read -r custom
                                 if [ -n "$custom" ]; then
                                     cp "$CONFIG_FILE" "$BACKUP_FILE"
                                     python3 -c "
@@ -563,7 +582,20 @@ else:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-                                    if [ $? -eq 0 ]; then
+                                    if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if '$target_agent':
+    config['agents']['$target_agent']['model'] = '$custom'
+else:
+    for agent in config.get('agents', {}):
+        config['agents'][agent]['model'] = '$custom'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
                                         if [ -n "$target_agent" ]; then
                                             echo -e "${GREEN}✓ [$target_agent] switched to: $custom${NC}"
                                         else
@@ -590,7 +622,20 @@ else:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-                                if [ $? -eq 0 ]; then
+                                if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+if '$target_agent':
+    config['agents']['$target_agent']['model'] = '$selected'
+else:
+    for agent in config.get('agents', {}):
+        config['agents'][agent]['model'] = '$selected'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
                                     if [ -n "$target_agent" ]; then
                                         echo -e "${GREEN}✓ [$target_agent] switched to: $selected${NC}"
                                     else
@@ -618,7 +663,7 @@ with open('$CONFIG_FILE', 'w') as f:
                 echo ""
 
                 echo -n -e "${BLUE}Select model [1-${#MODELS[@]}] or 0 to return: ${NC}"
-                read choice
+                read -r choice
                 case $choice in
                     0) continue ;;
                     [1-9]|1[0-9])
@@ -627,7 +672,7 @@ with open('$CONFIG_FILE', 'w') as f:
                             selected="${MODELS[$index]}"
                             if [ "$selected" = "custom" ]; then
                                 echo -n -e "${YELLOW}Enter model name: ${NC}"
-                                read custom
+                                read -r custom
                                 if [ -n "$custom" ]; then
                                     # Switch opencode Main model andSmall model
                                     cp "$OPENCODE_CONFIG" "$OPENCODE_CONFIG.backup"
@@ -651,7 +696,17 @@ for agent in config.get('agents', {}):
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-                                    if [ $? -eq 0 ]; then
+                                    if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$custom'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
                                         echo -e "${GREEN}✓ All modelsswitched to: $custom${NC}"
                                     else
                                         echo -e "${RED}✗ Switch failed${NC}"
@@ -682,7 +737,17 @@ for agent in config.get('agents', {}):
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
 " 2>/dev/null
-                                if [ $? -eq 0 ]; then
+                                if python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    config = json.load(f)
+
+for agent in config.get('agents', {}):
+    config['agents'][agent]['model'] = '$selected'
+
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+" 2>/dev/null; then
                                     echo -e "${GREEN}✓ All modelsswitched to: $selected${NC}"
                                 else
                                     echo -e "${RED}✗ Switch failed${NC}"

@@ -12,12 +12,26 @@ MODELS=(
     "opencode/big-pickle"
     "custom"
 )
+# Known oh-my-opencode agents (for displaying all agents including unconfigured)
+KNOWN_AGENTS=(
+    "sisyphus"
+    "librarian"
+    "explore"
+    "oracle"
+    "frontend-ui-ux-engineer"
+    "document-writer"
+    "multimodal-looker"
+    "prometheus"
+    "metis"
+    "momus"
+    "atlas"
+)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
     BLUE='\033[0;34m'
-NC='\033[0m'
+GRAY='\033[0;90m'
 
 # Initialize model list (load favorites and deduplicate)
 get_current_model() {
@@ -103,14 +117,22 @@ import json
 try:
     with open('$CONFIG_FILE', 'r') as f:
         config = json.load(f)
-        if config.get('agents'):
-            i = 1
-            for name in config['agents'].keys():
-                print(f'{i}|{name}')
-                i += 1
+        configured_agents = set(config.get('agents', {}).keys())
+        i = 1
+        for name in ['sisyphus', 'librarian', 'explore', 'oracle', 'frontend-ui-ux-engineer', 'document-writer', 'multimodal-looker', 'prometheus', 'metis', 'momus', 'atlas']:
+            status = 'configured' if name in configured_agents else 'unconfigured'
+            print(f'{i}|{name}|{status}')
+            i += 1
 except:
     pass
 " 2>/dev/null
+    else
+        # If config file doesn't exist, list all known agents as unconfigured
+        i=1
+        for name in "${KNOWN_AGENTS[@]}"; do
+            echo "${i}|${name}|unconfigured"
+            i=$((i+1))
+        done
     fi
 }
 
@@ -134,13 +156,25 @@ show_current() {
     echo -e "  ${GREEN}Small model:${NC}   ${small_model}"
     echo ""
     echo -e "${YELLOW}[oh-my-opencode]${NC}"
-    agents_info=$(get_oh_my_opencode_agents)
-    if [ -n "$agents_info" ]; then
-        while IFS='|' read -r agent_name model; do
-            printf "  ${GREEN}%-25s${NC} %s\n" "$agent_name:" "$model"
-        done <<< "$agents_info"
+    if [ -f "$CONFIG_FILE" ]; then
+        python3 -c "
+import json
+try:
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+        configured_agents = config.get('agents', {})
+        all_agents = ['sisyphus', 'librarian', 'explore', 'oracle', 'frontend-ui-ux-engineer', 'document-writer', 'multimodal-looker', 'prometheus', 'metis', 'momus', 'atlas']
+        for name in all_agents:
+            if name in configured_agents:
+                model = configured_agents[name].get('model', 'unknown')
+                print(f'  {name}: {model}')
+            else:
+                print(f'  {name}: \\033[0;90m[unconfigured]\\033[0m')
+except:
+    print('  \\033[0;31mError reading configuration\\033[0m')
+" 2>/dev/null
     else
-        echo "  ${RED}No agent configuration${NC}"
+        echo "  ${RED}Configuration file not found${NC}"
     fi
     echo ""
 }
@@ -523,10 +557,12 @@ with open('$OPENCODE_CONFIG', 'w') as f:
 
                 agents_list=$(list_agents)
                 agent_count=$(echo "$agents_list" | wc -l)
-                i=1
-                while IFS='|' read -r num agent_name; do
-                    printf "  ${GREEN}%2d)${NC} %s\n" "$num" "$agent_name"
-                    i=$((i+1))
+                while IFS='|' read -r num agent_name status; do
+                    if [ "$status" = "configured" ]; then
+                        printf "  ${GREEN}%2d)${NC} %s\n" "$num" "$agent_name"
+                    else
+                        printf "  ${GREEN}%2d)${NC} %s ${GRAY}[unconfigured]${NC}\n" "$num" "$agent_name"
+                    fi
                 done <<< "$agents_list"
                 printf "  ${GREEN}%2d)${NC} %s\n" "0" "All agents"
                 echo ""

@@ -186,6 +186,10 @@ opencode-model --agent Sisyphus opencode/glm-4.7-free
 - `frontend-ui-ux-engineer` - UI/UX design
 - `document-writer` - Technical documentation
 - `multimodal-looker` - Media file analysis
+- `prometheus` - Strategic planning
+- `metis` - Pre-planning analysis
+- `momus` - Plan validation
+- `atlas` - Master orchestrator
 
 ### Switch OpenCode Main Model
 

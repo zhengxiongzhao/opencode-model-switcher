@@ -4,14 +4,7 @@ CONFIG_FILE="$HOME/.config/opencode/oh-my-opencode.json"
 OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
 BACKUP_FILE="$CONFIG_FILE.backup"
 
-# Initial MODELS (will be updated dynamically)
-MODELS=(
-    "opencode/glm-4.7-free"
-    "opencode/minimax-m2.1-free"
-    "opencode/grok-code"
-    "opencode/big-pickle"
-    "custom"
-)
+# MODELS will be populated from favorites and custom option
 # Known oh-my-opencode agents (for displaying all agents including unconfigured)
 KNOWN_AGENTS=(
     "sisyphus"
@@ -197,16 +190,7 @@ update_models() {
         done
         return 1
     }
-
-    # 添加MODELS中的非"custom"模型
-    for model in "${MODELS[@]}"; do
-        if [[ "$model" != "custom" ]]; then
-            if ! array_contains "$model" "${NEW_MODELS[@]}"; then
-                NEW_MODELS+=("$model")
-            fi
-        fi
-    done
-
+    # 添加收藏模型（去重）
     # 添加收藏模型（去重）
     for model in "${FAVORITE_MODELS[@]}"; do
         if ! array_contains "$model" "${NEW_MODELS[@]}"; then

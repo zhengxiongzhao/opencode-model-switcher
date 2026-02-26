@@ -181,7 +181,9 @@ except:
 
 # Dynamically update MODELS array, add favorite models (deduplicate)
 update_models() {
-    read -ra FAVORITE_MODELS <<< "$(get_favorite_models)"
+    FAVORITE_MODELS=()
+    while IFS= read -r model; do FAVORITE_MODELS+=("$model"); done <<< "$(get_favorite_models)"
+    unset IFS
 
     NEW_MODELS=()
 

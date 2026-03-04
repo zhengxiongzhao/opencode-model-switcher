@@ -305,37 +305,52 @@ except:
 }
 
 # Dynamically update MODELS array, add favorite models (deduplicate)
-update_models() {
-    FAVORITE_MODELS=()
-    while IFS= read -r model; do FAVORITE_MODELS+=("$model"); done <<< "$(get_favorite_models)"
-    unset IFS
-
-    NEW_MODELS=()
-
-    # 辅助函数：检查元素是否在数组中
-    array_contains() {
-        local element="$1"
-        shift
-        local array=("$@")
-        for item in "${array[@]}"; do
-            [[ "$item" == "$element" ]] && return 0
-        done
-        return 1
-    }
-    # 添加收藏模型（去重）
-    # 添加收藏模型（去重）
-    for model in "${FAVORITE_MODELS[@]}"; do
-        if ! array_contains "$model" "${NEW_MODELS[@]}"; then
-            NEW_MODELS+=("$model")
-        fi
-    done
-
-    # Add custom
-    NEW_MODELS+=("custom")
-
-    # Update MODELS
-    MODELS=("${NEW_MODELS[@]}")
-}
+#HJ|update_models() {
+#XY|    # Get free models
+#XY|    FREE_MODELS=()
+#XY|    while IFS= read -r model; do 
+#XY|        [ -n "$model" ] && FREE_MODELS+=("opencode/$model")
+#XY|    done <<< "$(get_free_models)"
+#XY|    unset IFS
+#MV|
+#XY|    # Get favorite models with validation
+#XY|    validate_and_clean_favorites "${FREE_MODELS[@]}"
+#MV|
+#XY|    FAVORITE_MODELS=()
+#BB|    while IFS= read -r model; do FAVORITE_MODELS+=("$model"); done <<< "$(get_favorite_models)"
+#MV|    unset IFS
+#NW|
+#RS|    NEW_MODELS=()
+#RN|
+#HN|    # Helper function: check if element exists in array
+#SZ|    array_contains() {
+#SN|        local element="$1"
+#BZ|        shift
+#NQ|        local array=("$@")
+#KH|        for item in "${array[@]}"; do
+#KV|        [[ "$item" == "$element" ]] && return 0
+#PX|        done
+#JV|        return 1
+#PK|    }
+#TR|    # Add free models (deduplicated)
+#XY|    for model in "${FREE_MODELS[@]}"; do
+#XY|        if ! array_contains "$model" "${NEW_MODELS[@]}"; then
+#XY|            NEW_MODELS+=("$model")
+#XY|        fi
+#XY|    done
+#TR|    # Add favorite models (deduplicated)
+#HY|    for model in "${FAVORITE_MODELS[@]}"; do
+#MT|        if ! array_contains "$model" "${NEW_MODELS[@]}"; then
+#PM|            NEW_MODELS+=("$model")
+#HB|        fi
+#PX|    done
+#YP|
+#NQ|    # Add custom
+#JV|    NEW_MODELS+=("custom")
+#NZ|
+#JK|    # Update MODELS
+#VX|    MODELS=("${NEW_MODELS[@]}")
+#NX|}
 
 list_models() {
     update_models

@@ -6,6 +6,10 @@
 
 A powerful command-line utility for quickly switching between different AI language models for [OpenCode](https://opencode.ai) and [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode).
 
+<div style="text-align: center;">
+   <img src="docs/image.png" height=800>
+</div>
+
 ## Features
 
 - 🚀 **Quick Model Switching**: Switch models for opencode and all oh-my-opencode agents in seconds

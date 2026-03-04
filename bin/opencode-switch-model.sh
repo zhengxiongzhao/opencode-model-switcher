@@ -94,7 +94,7 @@ validate_and_clean_favorites() {
         return 0
     fi
 
-    # Get available models
+    # Get available models (format: model-name without prefix)
     local available_models_str=$(get_free_models 2>/dev/null || echo "")
     local -a AVAILABLE_MODELS=()
     while IFS= read -r model; do 
@@ -102,7 +102,7 @@ validate_and_clean_favorites() {
     done <<< "$available_models_str"
     unset IFS
 
-    # Read current favorites
+    # Read current favorites (format: provider/model)
     local favorites_str=$(python3 -c "
 import json
 try:
@@ -124,20 +124,22 @@ except:
     done <<< "$favorites_str"
     unset IFS
 
-    # Check for invalid favorites
+    # Check for invalid favorites - compare both formats
     local -a INVALID_FAVORITES=()
-    array_contains() {
-        local element="$1"
-        shift
-        local array=("$@")
-        for item in "${array[@]}"; do
-            [[ "$item" == "$element" ]] && return 0
-        done
-        return 1
-    }
-
     for fav in "${FAVORITES[@]}"; do
-        if ! array_contains "$fav" "${AVAILABLE_MODELS[@]}"; then
+        # Extract model name from favorite (e.g., "opencode/minimax-m2.5-free" -> "minimax-m2.5-free")
+        local fav_model=$(echo "$fav" | sed 's|^opencode/||')
+        
+        # Check if model exists in available models
+        local found=0
+        for avail in "${AVAILABLE_MODELS[@]}"; do
+            if [ "$fav_model" = "$avail" ]; then
+                found=1
+                break
+            fi
+        done
+        
+        if [ $found -eq 0 ]; then
             INVALID_FAVORITES+=("$fav")
         fi
     done

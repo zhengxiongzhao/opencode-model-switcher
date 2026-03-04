@@ -149,8 +149,8 @@ except:
         return 0
     fi
 
-    # Export OTHER_FAVORITES (favorites not in free models) for display
-    export OTHER_FAVORITES
+    # Set OTHER_FAVORITES (favorites not in free models) for display
+    OTHER_FAVORITES=("${INVALID_FAVORITES[@]}")
     
     return 0
 }

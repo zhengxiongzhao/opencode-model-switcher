@@ -149,46 +149,12 @@ except:
         return 0
     fi
 
-    # Display invalid favorites
-    echo -e "${YELLOW}Found invalid favorites (not available):${NC}" >&2
-    for fav in "${INVALID_FAVORITES[@]}"; do
-        echo -e "  ${RED}- ${fav}${NC}" >&2
-    done
-
-    # Prompt user
-    read -p "Delete these invalid favorites? [Y/n] " -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ -n "$REPLY" ]]; then
-        echo -e "${YELLOW}Cancelled${NC}" >&2
-        return 0
-    fi
-
-    # Backup before modification
-    if ! backup_favorites_file; then
-        echo -e "${RED}✗ Cannot proceed without backup${NC}" >&2
-        return 1
-    fi
-
-    # Remove invalid favorites using python3
-    local invalid_list=$(printf "'%s'," "${INVALID_FAVORITES[@]}" | sed 's/,$//')
-    python3 -c "
-import json
-invalid_set = {${invalid_list}}
-try:
-    with open('$model_file', 'r') as f:
-        data = json.load(f)
-    favorites = data.get('favorite', [])
-    original_count = len(favorites)
-    data['favorite'] = [fav for fav in favorites if f\"{fav.get('providerID', '')}/{fav.get('modelID', '')}\" not in invalid_set]
-    removed_count = original_count - len(data['favorite'])
-    with open('$model_file', 'w') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f'Removed {removed_count} invalid favorite(s)')
-except Exception as e:
-    print(f'Error: {e}', file=__import__('sys').stderr)
-    exit(1)
-" 2>&1
+    # Export OTHER_FAVORITES (favorites not in free models) for display
+    export OTHER_FAVORITES
+    
+    return 0
 }
+
 
 get_favorite_models() {
     local model_file="$HOME/.local/state/opencode/model.json"
@@ -340,12 +306,15 @@ update_models() {
             NEW_MODELS+=("$model")
         fi
     done
-    # Add favorite models (deduplicated)
-    for model in "${FAVORITE_MODELS[@]}"; do
-        if ! array_contains "$model" "${NEW_MODELS[@]}"; then
-            NEW_MODELS+=("$model")
-        fi
-    done
+
+# Add OTHER_FAVORITES (favorites not in free models)
+for model in "${OTHER_FAVORITES[@]}"; do
+    if ! array_contains "$model" "${NEW_MODELS[@]}"; then
+        NEW_MODELS+=("$model")
+    fi
+done
+
+# Add custom
 
     # Add custom
     NEW_MODELS+=("custom")

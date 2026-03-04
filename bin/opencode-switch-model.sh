@@ -66,6 +66,128 @@ except:
     fi
 }
 
+# Backup favorites file with timestamp
+backup_favorites_file() {
+    local favorites_file="$HOME/.local/state/opencode/model.json"
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    local backup_file="${favorites_file}.backup.${timestamp}"
+
+    if [ ! -f "$favorites_file" ]; then
+        echo -e "${RED}✗ Favorites file not found: $favorites_file${NC}"
+        exit 1
+    fi
+
+    cp "$favorites_file" "$backup_file"
+
+    if [ ! -f "$backup_file" ]; then
+        echo -e "${RED}✗ Failed to create backup: $backup_file${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓ Backup created: $backup_file${NC}"
+}
+
+# Validate and clean invalid favorites
+validate_and_clean_favorites() {
+    local model_file="$HOME/.local/state/opencode/model.json"
+    if [ ! -f "$model_file" ]; then
+        return 0
+    fi
+
+    # Get available models
+    local available_models_str=$(get_free_models 2>/dev/null || echo "")
+    local -a AVAILABLE_MODELS=()
+    while IFS= read -r model; do 
+        [ -n "$model" ] && AVAILABLE_MODELS+=("$model")
+    done <<< "$available_models_str"
+    unset IFS
+
+    # Read current favorites
+    local favorites_str=$(python3 -c "
+import json
+try:
+    with open('$model_file', 'r') as f:
+        data = json.load(f)
+        favorites = data.get('favorite', [])
+        for fav in favorites:
+            provider = fav.get('providerID', '')
+            model = fav.get('modelID', '')
+            if model:
+                print(f'{provider}/{model}')
+except:
+    pass
+" 2>/dev/null || echo "")
+
+    local -a FAVORITES=()
+    while IFS= read -r model; do 
+        [ -n "$model" ] && FAVORITES+=("$model")
+    done <<< "$favorites_str"
+    unset IFS
+
+    # Check for invalid favorites
+    local -a INVALID_FAVORITES=()
+    array_contains() {
+        local element="$1"
+        shift
+        local array=("$@")
+        for item in "${array[@]}"; do
+            [[ "$item" == "$element" ]] && return 0
+        done
+        return 1
+    }
+
+    for fav in "${FAVORITES[@]}"; do
+        if ! array_contains "$fav" "${AVAILABLE_MODELS[@]}"; then
+            INVALID_FAVORITES+=("$fav")
+        fi
+    done
+
+    # If no invalid favorites, return
+    if [ ${#INVALID_FAVORITES[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    # Display invalid favorites
+    echo -e "${YELLOW}Found invalid favorites (not available):${NC}" >&2
+    for fav in "${INVALID_FAVORITES[@]}"; do
+        echo -e "  ${RED}- ${fav}${NC}" >&2
+    done
+
+    # Prompt user
+    read -p "Delete these invalid favorites? [Y/n] " -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ -n "$REPLY" ]]; then
+        echo -e "${YELLOW}Cancelled${NC}" >&2
+        return 0
+    fi
+
+    # Backup before modification
+    if ! backup_favorites_file; then
+        echo -e "${RED}✗ Cannot proceed without backup${NC}" >&2
+        return 1
+    fi
+
+    # Remove invalid favorites using python3
+    local invalid_list=$(printf "'%s'," "${INVALID_FAVORITES[@]}" | sed 's/,$//')
+    python3 -c "
+import json
+invalid_set = {${invalid_list}}
+try:
+    with open('$model_file', 'r') as f:
+        data = json.load(f)
+    favorites = data.get('favorite', [])
+    original_count = len(favorites)
+    data['favorite'] = [fav for fav in favorites if f\"{fav.get('providerID', '')}/{fav.get('modelID', '')}\" not in invalid_set]
+    removed_count = original_count - len(data['favorite'])
+    with open('$model_file', 'w') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f'Removed {removed_count} invalid favorite(s)')
+except Exception as e:
+    print(f'Error: {e}', file=__import__('sys').stderr)
+    exit(1)
+" 2>&1
+}
+
 get_favorite_models() {
     local model_file="$HOME/.local/state/opencode/model.json"
     if [ -f "$model_file" ]; then
@@ -84,6 +206,16 @@ except:
     pass
 " 2>/dev/null
     fi
+}
+
+# Get available free models from opencode
+get_free_models() {
+    local models=$(opencode models 2>/dev/null | grep "^opencode/" | sed 's/^opencode\///' | head -20)
+    if [ -z "$models" ]; then
+        echo "${RED}Error: Failed to fetch free models${NC}" >&2
+        return 1
+    fi
+    echo "$models"
 }
 
 get_oh_my_opencode_agents() {

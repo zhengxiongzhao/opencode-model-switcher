@@ -363,8 +363,9 @@ list_models() {
                 echo -e "${YELLOW}Available models:${NC}"
                 echo ""
                 for i in "${!MODELS[@]}"; do
-                    display_model $((i+1)) "${MODELS[$i]}"
-                done
+                    # Skip empty models
+                    [ -n "${MODELS[$i]}" ] && display_model $((i+1)) "${MODELS[$i]}"
+done
                 echo ""
 }
 

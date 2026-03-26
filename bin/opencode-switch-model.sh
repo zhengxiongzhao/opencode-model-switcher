@@ -652,17 +652,6 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                 esac
                  ;;
             3)
-                update_models
-                echo -e "${BLUE}════════════════════════════════════════${NC}"
-                echo -e "${BLUE}   oh-my-opencode Model list${NC}"
-                echo -e "${BLUE}════════════════════════════════════════${NC}"
-                echo -e "${YELLOW}Available models:${NC}"
-                echo ""
-                for i in "${!MODELS[@]}"; do
-                    display_model $((i+1)) "${MODELS[$i]}"
-                done
-                echo ""
-
                 # Select target to switch agent
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${BLUE}   Select target Agent${NC}"
@@ -705,7 +694,19 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                         ;;
                 esac
 
+                # Now show model list
+                update_models
                 echo ""
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-opencode Model list${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}Available models:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
                 echo -n -e "${BLUE}Select model [1-${#MODELS[@]}] or 0 to return: ${NC}"
                 read -r choice
                 case $choice in

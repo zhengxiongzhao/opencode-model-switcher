@@ -5,19 +5,22 @@ OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
 BACKUP_FILE="$CONFIG_FILE.backup"
 
 # MODELS will be populated from favorites and custom option
-# Known oh-my-opencode agents (for displaying all agents including unconfigured)
+# Known oh-my-opencode agents (all possible agents)
+# Agents not in config will be auto-created when modified
 KNOWN_AGENTS=(
-    "sisyphus"
-    "librarian"
+    "atlas"
     "explore"
-    "oracle"
-    "frontend-ui-ux-engineer"
-    "document-writer"
-    "multimodal-looker"
-    "prometheus"
+    "hephaestus"
+    "librarian"
     "metis"
     "momus"
-    "atlas"
+    "oracle"
+    "prometheus"
+    "multimodal-looker"
+    "sisyphus-junior"
+    "sisyphus"
+    "frontend-ui-ux-engineer"
+    "document-writer"
 )
 
 RED='\033[0;31m'
@@ -211,11 +214,18 @@ try:
     with open('$CONFIG_FILE', 'r') as f:
         config = json.load(f)
         configured_agents = set(config.get('agents', {}).keys())
+        # Show all known agents, marking unconfigured ones
+        known_agents = ['atlas', 'explore', 'hephaestus', 'librarian', 'metis', 'momus', 'oracle', 'prometheus', 'multimodal-looker', 'sisyphus-junior', 'sisyphus', 'frontend-ui-ux-engineer', 'document-writer']
         i = 1
-        for name in ['sisyphus', 'librarian', 'explore', 'oracle', 'frontend-ui-ux-engineer', 'document-writer', 'multimodal-looker', 'prometheus', 'metis', 'momus', 'atlas']:
+        for name in known_agents:
             status = 'configured' if name in configured_agents else 'unconfigured'
             print(f'{i}|{name}|{status}')
             i += 1
+        # Also show any agents in config that are not in known list
+        for name in sorted(configured_agents):
+            if name not in known_agents:
+                print(f'{i}|{name}|configured')
+                i += 1
 except:
     pass
 " 2>/dev/null
@@ -256,13 +266,10 @@ try:
     with open('$CONFIG_FILE', 'r') as f:
         config = json.load(f)
         configured_agents = config.get('agents', {})
-        all_agents = ['sisyphus', 'librarian', 'explore', 'oracle', 'frontend-ui-ux-engineer', 'document-writer', 'multimodal-looker', 'prometheus', 'metis', 'momus', 'atlas']
-        for name in all_agents:
-            if name in configured_agents:
-                model = configured_agents[name].get('model', 'unknown')
-                print(f'  {name}: {model}')
-            else:
-                print(f'  {name}: \\033[0;90m[unconfigured]\\033[0m')
+        # Dynamically read agents from config file
+        for name in sorted(configured_agents.keys()):
+            model = configured_agents[name].get('model', 'unknown')
+            print(f'  {name}: {model}')
 except:
     print('  \\033[0;31mError reading configuration\\033[0m')
 " 2>/dev/null
@@ -342,7 +349,7 @@ switch_agent_to() {
     local agent_name="$1"
     local model="$2"
     if [ ! -f "$CONFIG_FILE" ]; then
-        echo -e "${RED}✗ Configuration filenot found${NC}"
+        echo -e "${RED}✗ Configuration file not found${NC}"
         return 1
     fi
 
@@ -353,11 +360,12 @@ import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 
-if config.get('agents', {}).get('$agent_name'):
-    config['agents']['$agent_name']['model'] = '$model'
-else:
-    print('Agent not found')
-    exit(1)
+# Ensure agents dict exists
+if 'agents' not in config:
+    config['agents'] = {}
+
+# Create agent if not exists, or update if exists
+config['agents']['$agent_name'] = {'model': '$model'}
 
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
@@ -365,7 +373,7 @@ with open('$CONFIG_FILE', 'w') as f:
         echo -e "${GREEN}✓ [$agent_name] switched to: $model${NC}"
         show_current
     else
-        echo -e "${RED}✗ Switch failed or agent not found${NC}"
+        echo -e "${RED}✗ Switch failed${NC}"
         cp "$BACKUP_FILE" "$CONFIG_FILE"
     fi
 }
@@ -375,24 +383,25 @@ switch_to() {
     local agent_name="$2"
 
     if [ ! -f "$CONFIG_FILE" ]; then
-        echo -e "${RED}✗ Configuration filenot found${NC}"
+        echo -e "${RED}✗ Configuration file not found${NC}"
         return 1
     fi
 
     cp "$CONFIG_FILE" "$BACKUP_FILE"
 
     if [ -n "$agent_name" ]; then
-        # Switch single agent
+        # Switch single agent (create if not exists)
         python3 -c "
 import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 
-if config.get('agents', {}).get('$agent_name'):
-    config['agents']['$agent_name']['model'] = '$model'
-else:
-    print('Agent not found')
-    exit(1)
+# Ensure agents dict exists
+if 'agents' not in config:
+    config['agents'] = {}
+
+# Create agent if not exists, or update if exists
+config['agents']['$agent_name'] = {'model': '$model'}
 
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
@@ -402,11 +411,12 @@ import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 
-if config.get('agents', {}).get('$agent_name'):
-    config['agents']['$agent_name']['model'] = '$model'
-else:
-    print('Agent not found')
-    exit(1)
+# Ensure agents dict exists
+if 'agents' not in config:
+    config['agents'] = {}
+
+# Create agent if not exists, or update if exists
+config['agents']['$agent_name'] = {'model': '$model'}
 
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
@@ -414,7 +424,7 @@ with open('$CONFIG_FILE', 'w') as f:
             echo -e "${GREEN}✓ [$agent_name] switched to: $model${NC}"
             show_current
         else
-            echo -e "${RED}✗ Switch failed or agent not found${NC}"
+            echo -e "${RED}✗ Switch failed${NC}"
             cp "$BACKUP_FILE" "$CONFIG_FILE"
         fi
     else
@@ -709,34 +719,42 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                                 read -r custom
                                 if [ -n "$custom" ]; then
                                     cp "$CONFIG_FILE" "$BACKUP_FILE"
-                                    python3 -c "
-import json
-with open('$CONFIG_FILE', 'r') as f:
-    config = json.load(f)
-
-if '$target_agent':
-    config['agents']['$target_agent']['model'] = '$custom'
-else:
-    for agent in config.get('agents', {}):
-        config['agents'][agent]['model'] = '$custom'
-
-with open('$CONFIG_FILE', 'w') as f:
-    json.dump(config, f, indent=2, ensure_ascii=False)
-" 2>/dev/null
-                                    if python3 -c "
-import json
-with open('$CONFIG_FILE', 'r') as f:
-    config = json.load(f)
-
-if '$target_agent':
-    config['agents']['$target_agent']['model'] = '$custom'
-else:
-    for agent in config.get('agents', {}):
-        config['agents'][agent]['model'] = '$custom'
-
-with open('$CONFIG_FILE', 'w') as f:
-    json.dump(config, f, indent=2, ensure_ascii=False)
-" 2>/dev/null; then
+                                        python3 -c "
+    import json
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+    
+    # Ensure agents dict exists
+    if 'agents' not in config:
+        config['agents'] = {}
+    
+    if '$target_agent':
+        config['agents']['$target_agent'] = {'model': '$custom'}
+    else:
+        for agent in config.get('agents', {}):
+            config['agents'][agent]['model'] = '$custom'
+    
+    with open('$CONFIG_FILE', 'w') as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+    " 2>/dev/null
+                                        if python3 -c "
+    import json
+    with open('$CONFIG_FILE', 'r') as f:
+        config = json.load(f)
+    
+    # Ensure agents dict exists
+    if 'agents' not in config:
+        config['agents'] = {}
+    
+    if '$target_agent':
+        config['agents']['$target_agent'] = {'model': '$custom'}
+    else:
+        for agent in config.get('agents', {}):
+            config['agents'][agent]['model'] = '$custom'
+    
+    with open('$CONFIG_FILE', 'w') as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+    " 2>/dev/null; then
                                         if [ -n "$target_agent" ]; then
                                             echo -e "${GREEN}✓ [$target_agent] switched to: $custom${NC}"
                                         else
@@ -754,8 +772,12 @@ import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 
+# Ensure agents dict exists
+if 'agents' not in config:
+    config['agents'] = {}
+
 if '$target_agent':
-    config['agents']['$target_agent']['model'] = '$selected'
+    config['agents']['$target_agent'] = {'model': '$selected'}
 else:
     for agent in config.get('agents', {}):
         config['agents'][agent]['model'] = '$selected'
@@ -768,8 +790,12 @@ import json
 with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 
+# Ensure agents dict exists
+if 'agents' not in config:
+    config['agents'] = {}
+
 if '$target_agent':
-    config['agents']['$target_agent']['model'] = '$selected'
+    config['agents']['$target_agent'] = {'model': '$selected'}
 else:
     for agent in config.get('agents', {}):
         config['agents'][agent]['model'] = '$selected'

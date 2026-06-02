@@ -79,7 +79,8 @@ except:
 # Backup favorites file with timestamp
 backup_favorites_file() {
     local favorites_file="$HOME/.local/state/opencode/model.json"
-    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    local timestamp
+    timestamp=$(date +"%Y%m%d_%H%M%S")
     local backup_file="${favorites_file}.backup.${timestamp}"
 
     if [ ! -f "$favorites_file" ]; then
@@ -105,7 +106,8 @@ validate_and_clean_favorites() {
     fi
 
     # Get available models (format: model-name without prefix)
-    local available_models_str=$(get_free_models 2>/dev/null || echo "")
+    local available_models_str
+    available_models_str=$(get_free_models 2>/dev/null || echo "")
     local -a AVAILABLE_MODELS=()
     while IFS= read -r model; do 
         [ -n "$model" ] && AVAILABLE_MODELS+=("$model")
@@ -113,7 +115,8 @@ validate_and_clean_favorites() {
     unset IFS
 
     # Read current favorites (format: provider/model)
-    local favorites_str=$(python3 -c "
+    local favorites_str
+    favorites_str=$(python3 -c "
 import json
 try:
     with open('$model_file', 'r') as f:
@@ -138,7 +141,7 @@ except:
     local -a INVALID_FAVORITES=()
     for fav in "${FAVORITES[@]}"; do
         # Extract model name from favorite (e.g., "opencode/minimax-m2.5-free" -> "minimax-m2.5-free")
-        local fav_model=$(echo "$fav" | sed 's|^opencode/||')
+        local fav_model="${fav#opencode/}"
         
         # Check if model exists in available models
         local found=0
@@ -188,7 +191,8 @@ except:
 
 # Get available free models from opencode
 get_free_models() {
-    local models=$(opencode models 2>/dev/null | grep "^opencode/" | sed 's/^opencode\///' | head -20)
+    local models
+    models=$(opencode models 2>/dev/null | grep "^opencode/" | sed 's/^opencode\///' | head -20)
     if [ -z "$models" ]; then
         echo "${RED}Error: Failed to fetch free models${NC}" >&2
         return 1

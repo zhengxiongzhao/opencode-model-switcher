@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/zhengxiongzhao/opencode-model-switcher)](https://github.com/zhengxiongzhao/opencode-model-switcher/releases)
 [![ShellCheck](https://github.com/zhengxiongzhao/opencode-model-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/zhengxiongzhao/opencode-model-switcher/actions/workflows/ci.yml)
 
-A powerful command-line utility for quickly switching between different AI language models for [OpenCode](https://opencode.ai) and [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode).
+A powerful command-line utility for quickly switching between different AI language models for [OpenCode](https://opencode.ai) and [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent).
 
 <div style="text-align: center;">
    <img src="docs/image.png" height=800>
@@ -12,7 +12,7 @@ A powerful command-line utility for quickly switching between different AI langu
 
 ## Features
 
-- 🚀 **Quick Model Switching**: Switch models for opencode and all oh-my-opencode agents in seconds
+- 🚀 **Quick Model Switching**: Switch models for opencode and all oh-my-openagent agents in seconds
 - 🎯 **Interactive Mode**: User-friendly menu system with color-coded output
 - 🔄 **Dynamic Model Loading**: Integrates with your favorite models from opencode
 - 🛡️ **Safe Operations**: Automatic backup before any configuration changes
@@ -68,7 +68,7 @@ rm -f ~/.config/opencode/bin/opencode-switch-model.sh
 
 - **python3**: For JSON parsing
 - **curl**: For downloading installation script
-- [OpenCode](https://opencode.ai) with [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) installed
+- [OpenCode](https://opencode.ai) with [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) installed
 
 ## Adding Models (Prerequisite)
 
@@ -100,7 +100,7 @@ opencode-model
 ```
 
 You'll be guided through selecting:
-- What to configure (opencode main model, small model, oh-my-opencode agents)
+- What to configure (opencode main model, small model, oh-my-openagent agents)
 - Which agent to modify
 - Which model to use
 
@@ -110,7 +110,7 @@ You'll be guided through selecting:
 # List all available models and current configuration
 opencode-model --list
 
-# Switch all oh-my-opencode agents to a specific model
+# Switch all oh-my-openagent agents to a specific model
 opencode-model opencode/glm-4.7-free
 
 # Switch a specific agent to a model
@@ -148,7 +148,7 @@ opencode-model --help
 The tool modifies configuration files managed by opencode:
 
 - **OpenCode Config**: `~/.config/opencode/opencode.json`
-- **oh-my-opencode Config**: `~/.config/opencode/oh-my-opencode.json`
+- **oh-my-openagent Config**: `~/.config/opencode/oh-my-openagent.json` (legacy `oh-my-opencode.json` also supported)
 - **Favorites**: `~/.local/state/opencode/model.json`
 
 Before any modification, a backup is automatically created with the `.backup` extension.
@@ -209,7 +209,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - [OpenCode](https://opencode.ai) - The AI coding platform
-- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) - Multi-agent framework
+- [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) - Multi-agent framework
 - All contributors and users of this tool
 
 ## Support

@@ -1,7 +1,7 @@
 {
   "name": "opencode-model-switcher",
   "version": "1.0.0",
-  "description": "Quick AI model switching for opencode and oh-my-opencode",
+  "description": "Quick AI model switching for opencode and oh-my-openagent",
   "main": "bin/opencode-switch-model.sh",
   "bin": {
     "opencode-model": "./bin/opencode-switch-model.sh"
@@ -16,7 +16,7 @@
     "opencode",
     "ai",
     "model-switcher",
-    "oh-my-opencode",
+    "oh-my-openagent",
     "bash",
     "shell-script",
     "cli"

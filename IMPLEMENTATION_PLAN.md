@@ -4,7 +4,7 @@
 
 **Project Name**: opencode-model-switcher
 **Type**: Bash shell script utility
-**Purpose**: Quick AI model switching for opencode and oh-my-opencode tools
+**Purpose**: Quick AI model switching for opencode and oh-my-openagent tools
 **Current Location**: `/home/zxzhao/opencode-model/`
 **Main Script**: `opencode-switch-model.sh` (772 lines)
 
@@ -54,7 +54,7 @@ opencode-model-switcher/
 {
   "name": "opencode-model-switcher",
   "version": "1.0.0",
-  "description": "Quick AI model switching for opencode and oh-my-opencode",
+  "description": "Quick AI model switching for opencode and oh-my-openagent",
   "main": "bin/opencode-switch-model.sh",
   "bin": {
     "opencode-model": "./bin/opencode-switch-model.sh"
@@ -66,7 +66,7 @@ opencode-model-switcher/
     "opencode",
     "ai",
     "model-switcher",
-    "oh-my-opencode"
+    "oh-my-openagent"
   ],
   "author": "Your Name",
   "license": "MIT"

@@ -47,7 +47,7 @@ Launches an interactive menu system that guides you through:
 1. **Select Configuration Type**:
    - opencode main model
    - opencode small model
-   - oh-my-opencode agents
+   - oh-my-openagent agents
    - All models
 
 2. **Select Target**:
@@ -76,7 +76,7 @@ Launches an interactive menu system that guides you through:
   Main Model:   zhipuai-coding-plan/glm-4.7
   Small Model:  zhipuai-coding-plan/glm-4.7
 
-[oh-my-opencode]
+[oh-my-openagent]
   Sisyphus:                   zhipuai-coding-plan/glm-4.7
   librarian:                   zhipuai-coding-plan/glm-4.7
   ...
@@ -87,7 +87,7 @@ Launches an interactive menu system that guides you through:
 
   1) opencode main model
   2) opencode small model
-  3) oh-my-opencode agents
+   3) oh-my-openagent agents
   4) All models
 
 Select type [1-4] or q to exit: 1
@@ -105,7 +105,7 @@ opencode-model -l
 
 **Output**:
 - Current configuration for opencode (main and small models)
-- Current configuration for all oh-my-opencode agents
+- Current configuration for all oh-my-openagent agents
 - Available models (built-in models + your favorites)
 
 **Example Output**:
@@ -118,13 +118,13 @@ opencode-model -l
   Main Model:   zhipuai-coding-plan/glm-4.7
   Small Model:  zhipuai-coding-plan/glm-4.7
 
-[oh-my-opencode]
+[oh-my-openagent]
   Sisyphus:                   zhipuai-coding-plan/glm-4.7
   librarian:                   zhipuai-coding-plan/glm-4.7
   ...
 
 ╔════════════════════════════════════════════════╗
-║   oh-my-opencode Model List                           ║
+║   oh-my-openagent Model List                           ║
 ╚════════════════════════════════════════════════╝
 
 Available Models:
@@ -142,7 +142,7 @@ Available Models:
 opencode-model <model_name>
 ```
 
-Switches all oh-my-opencode agents to the specified model.
+Switches all oh-my-openagent agents to the specified model.
 
 **Example**:
 ```bash
@@ -166,7 +166,7 @@ opencode-model opencode/glm-4.7-free
 opencode-model --agent <agent_name> <model>
 ```
 
-Switches a single oh-my-opencode agent to the specified model.
+Switches a single oh-my-openagent agent to the specified model.
 
 **Example**:
 ```bash
@@ -279,7 +279,7 @@ opencode-model --list
 The tool automatically creates backups before making any configuration changes.
 
 **Backup Location**:
-- `~/.config/opencode/oh-my-opencode.json.backup`
+- `~/.config/opencode/oh-my-openagent.json.backup`
 - `~/.config/opencode/opencode.json.backup`
 
 **How Backups Work**:
@@ -292,8 +292,8 @@ The tool automatically creates backups before making any configuration changes.
 If you need to restore from a backup:
 
 ```bash
-# Restore oh-my-opencode config
-cp ~/.config/opencode/oh-my-opencode.json.backup ~/.config/opencode/oh-my-opencode.json
+# Restore oh-my-openagent config
+cp ~/.config/opencode/oh-my-openagent.json.backup ~/.config/opencode/oh-my-openagent.json
 
 # Restore opencode config
 cp ~/.config/opencode/opencode.json.backup ~/.config/opencode/opencode.json
@@ -332,12 +332,12 @@ opencode-model --agent explore opencode/glm-4.7-free
 opencode-model
 
 # Follow prompts:
-# 1. Choose configuration type (e.g., "oh-my-opencode agents")
+# 1. Choose configuration type (e.g., "oh-my-openagent agents")
 # 2. Choose target (e.g., "Sisyphus")
 # 3. Choose model from list (e.g., "opencode/glm-4.7-free")
 ```
 
-### Use Case 4: Configure Both opencode and oh-my-opencode
+### Use Case 4: Configure Both opencode and oh-my-openagent
 
 ```bash
 # Set opencode main model
@@ -346,7 +346,7 @@ opencode-model --main-model opencode/glm-4.7-free
 # Set opencode small model
 opencode-model --small-model opencode/minimax-m2.1-free
 
-# Set all oh-my-opencode agents
+# Set all oh-my-openagent agents
 opencode-model opencode/glm-4.7-free
 
 # Verify all settings
@@ -361,7 +361,7 @@ opencode-model
 
 # Select "4) All models"
 # Select desired model
-# All opencode and oh-my-opencode agents will use the same model
+# All opencode and oh-my-openagent agents will use the same model
 ```
 
 ## Tips and Tricks
@@ -425,9 +425,9 @@ opencode-model
 
 **Error**: `✗ 配置文件不存在` (Configuration file does not exist)
 
-**Cause**: OpenCode or oh-my-opencode is not installed
+**Cause**: OpenCode or oh-my-openagent is not installed
 
-**Solution**: Install opencode with oh-my-opencode first
+**Solution**: Install opencode with oh-my-openagent first
 
 ### Agent Not Found
 
@@ -507,9 +507,9 @@ The tool modifies these configuration files:
 - `--main-model` command
 - Interactive mode "opencode main model" option
 
-### oh-my-opencode Configuration
+### oh-my-openagent Configuration
 
-**File**: `~/.config/opencode/oh-my-opencode.json`
+**File**: `~/.config/opencode/oh-my-openagent.json` (legacy `oh-my-opencode.json` also supported)
 
 **Structure**:
 ```json
@@ -528,7 +528,7 @@ The tool modifies these configuration files:
 
 **Modified by**:
 - `--agent` command
-- Interactive mode "oh-my-opencode agents" option
+- Interactive mode "oh-my-openagent agents" option
 
 ### Favorite Models
 

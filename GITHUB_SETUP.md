@@ -17,7 +17,7 @@ You need to create the GitHub repository manually since the `gh` CLI is not avai
 1. **Create New Repository**:
    - Go to https://github.com/new
    - Repository name: `opencode-model-switcher` (or your preferred name)
-   - Description: `Quick AI model switching for opencode and oh-my-opencode`
+   - Description: `Quick AI model switching for opencode and oh-my-openagent`
    - Make it **Public**
    - Click "Create repository"
 
@@ -69,7 +69,7 @@ brew install gh
 gh auth login
 
 # Create repository
-gh repo create opencode-model-switcher --public --source=. --description="Quick AI model switching for opencode and oh-my-opencode"
+gh repo create opencode-model-switcher --public --source=. --description="Quick AI model switching for opencode and oh-my-openagent"
 
 # Push
 git push -u origin master

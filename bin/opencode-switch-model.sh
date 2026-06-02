@@ -1,11 +1,18 @@
 #!/bin/bash
 
-CONFIG_FILE="$HOME/.config/opencode/oh-my-opencode.json"
+# Detect oh-my-openagent config (prefer new name, fallback to legacy)
+if [ -f "$HOME/.config/opencode/oh-my-openagent.json" ]; then
+    CONFIG_FILE="$HOME/.config/opencode/oh-my-openagent.json"
+elif [ -f "$HOME/.config/opencode/oh-my-opencode.json" ]; then
+    CONFIG_FILE="$HOME/.config/opencode/oh-my-opencode.json"
+else
+    CONFIG_FILE="$HOME/.config/opencode/oh-my-openagent.json"
+fi
 OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
 BACKUP_FILE="$CONFIG_FILE.backup"
 
 # MODELS will be populated from favorites and custom option
-# Known oh-my-opencode agents (all possible agents)
+# Known oh-my-openagent agents (all possible agents)
 # Agents not in config will be auto-created when modified
 KNOWN_AGENTS=(
     "atlas"
@@ -258,7 +265,7 @@ show_current() {
     echo -e "  ${GREEN}Main model:${NC}   ${main_model}"
     echo -e "  ${GREEN}Small model:${NC}   ${small_model}"
     echo ""
-    echo -e "${YELLOW}[oh-my-opencode]${NC}"
+    echo -e "${YELLOW}[oh-my-openagent]${NC}"
     if [ -f "$CONFIG_FILE" ]; then
         python3 -c "
 import json
@@ -334,7 +341,7 @@ list_models() {
     update_models
     show_current
     echo -e "${BLUE}════════════════════════════════════════${NC}"
-    echo -e "${BLUE}   oh-my-opencode Model list${NC}"
+    echo -e "${BLUE}   oh-my-openagent Model list${NC}"
     echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${YELLOW}Available models:${NC}"
                 echo ""
@@ -544,7 +551,7 @@ interactive() {
         echo -e "${BLUE}════════════════════════════════════════${NC}"
         echo "  1) opencode Main model"
         echo "  2) opencode Small model"
-        echo "  3) oh-my-opencode agents"
+        echo "  3) oh-my-openagent agents"
         echo "  4) All models"
         echo ""
 
@@ -556,7 +563,7 @@ interactive() {
             1)
                 update_models
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
-                echo -e "${BLUE}   oh-my-opencode Model list${NC}"
+                echo -e "${BLUE}   oh-my-openagent Model list${NC}"
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${YELLOW}Available models:${NC}"
                 echo ""
@@ -605,7 +612,7 @@ with open('$OPENCODE_CONFIG', 'w') as f:
             2)
                 update_models
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
-                echo -e "${BLUE}   oh-my-opencode Model list${NC}"
+                echo -e "${BLUE}   oh-my-openagent Model list${NC}"
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${YELLOW}Available models:${NC}"
                 echo ""
@@ -652,6 +659,17 @@ with open('$OPENCODE_CONFIG', 'w') as f:
                 esac
                  ;;
             3)
+                update_models
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${BLUE}   oh-my-openagent Model list${NC}"
+                echo -e "${BLUE}════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}Available models:${NC}"
+                echo ""
+                for i in "${!MODELS[@]}"; do
+                    display_model $((i+1)) "${MODELS[$i]}"
+                done
+                echo ""
+
                 # Select target to switch agent
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${BLUE}   Select target Agent${NC}"
@@ -821,7 +839,7 @@ with open('$CONFIG_FILE', 'w') as f:
             4)
                 update_models
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
-                echo -e "${BLUE}   oh-my-opencode Model list${NC}"
+                echo -e "${BLUE}   oh-my-openagent Model list${NC}"
                 echo -e "${BLUE}════════════════════════════════════════${NC}"
                 echo -e "${YELLOW}Available models:${NC}"
                 echo ""
@@ -853,7 +871,7 @@ config['small_model'] = '$custom'
 with open('$OPENCODE_CONFIG', 'w') as f:
     json.dump(config, f, indent=4, ensure_ascii=False)
 " 2>/dev/null
-                                    # SwitchAll oh-my-opencode agents
+                                    # SwitchAll oh-my-openagent agents
                                     cp "$CONFIG_FILE" "$BACKUP_FILE"
                                     python3 -c "
 import json
@@ -894,7 +912,7 @@ config['small_model'] = '$selected'
 with open('$OPENCODE_CONFIG', 'w') as f:
     json.dump(config, f, indent=4, ensure_ascii=False)
 " 2>/dev/null
-                                # SwitchAll oh-my-opencode agents
+                                # SwitchAll oh-my-openagent agents
                                 cp "$CONFIG_FILE" "$BACKUP_FILE"
                                 python3 -c "
 import json
@@ -960,12 +978,12 @@ case "$1" in
     --help|-h)
         echo "Usage: $0 [options] [model]"
         echo "  --list                  List all models"
-        echo "  --agent <name> <model>  Switch specified oh-my-opencode agent"
+        echo "  --agent <name> <model>  Switch specified oh-my-openagent agent"
         echo "  --main-model <model>    Switch opencode Main model"
         echo "  --small-model <model>   Switch opencode Small model"
         echo "  --version               Show version"
         echo "  --help                  Show help"
-        echo "  model name                Switch all oh-my-opencode agents (format: provider/model)"
+        echo "  model name                Switch all oh-my-openagent agents (format: provider/model)"
         exit 0
         ;;
     --version)

@@ -77,6 +77,6 @@ Add any other context about the problem here.
 # ~/.config/opencode/opencode.json
 cat ~/.config/opencode/opencode.json
 
-# ~/.config/opencode/oh-my-opencode.json
-cat ~/.config/opencode/oh-my-opencode.json
+# ~/.config/opencode/oh-my-openagent.json
+cat ~/.config/opencode/oh-my-openagent.json
 ```

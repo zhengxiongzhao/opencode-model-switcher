@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 - Support for opencode main and small model switching
-- Support for oh-my-opencode agent switching
+- Support for oh-my-openagent agent switching
 - Interactive menu system
 - Color-coded output
 - Free model indicators

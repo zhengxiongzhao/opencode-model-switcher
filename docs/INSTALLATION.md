@@ -255,7 +255,7 @@ Configuration files (managed by opencode, not this tool):
 ```
 ~/.config/opencode/
 ├── opencode.json                    # OpenCode main config
-├── oh-my-opencode.json              # oh-my-opencode agents config
+├── oh-my-openagent.json              # oh-my-openagent agents config
 └── *.backup                        # Auto-generated backups
 
 ~/.local/state/opencode/
